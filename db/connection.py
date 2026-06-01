@@ -15,11 +15,17 @@ def init_db():
     Membuat engine dan session factory.
     Menyimpan referensi ke state.engine dan state.db.
     """
-    state.engine = create_engine(
-        config.DATABASE_URI,
-        echo=config.DATABASE_ECHO,
-        pool_pre_ping=True,
-    )
+    is_sqlite = config.DATABASE_URI.startswith("sqlite")
+
+    engine_args = {
+        "echo": config.DATABASE_ECHO,
+    }
+
+    if not is_sqlite:
+        engine_args["pool_pre_ping"] = True
+        engine_args["pool_recycle"] = 300
+
+    state.engine = create_engine(config.DATABASE_URI, **engine_args)
 
     session_factory = sessionmaker(bind=state.engine)
     state.db = scoped_session(session_factory)

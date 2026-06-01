@@ -33,7 +33,10 @@ _MYSQL_URI = (
     )
 )
 
-_SQLITE_URI = "sqlite:///" + os.path.join(BASE_DIR, "kurikulum_obe.db")
+# SQLite: gunakan /tmp/ di Vercel (filesystem read-only kecuali /tmp/)
+_IS_VERCEL = os.environ.get("VERCEL", "") == "1"
+_SQLITE_DIR = "/tmp" if _IS_VERCEL else BASE_DIR
+_SQLITE_URI = "sqlite:///" + os.path.join(_SQLITE_DIR, "kurikulum_obe.db")
 
 # Supabase: ambil dari DATABASE_URL environment variable
 _SUPABASE_URI = os.environ.get("DATABASE_URL", "")

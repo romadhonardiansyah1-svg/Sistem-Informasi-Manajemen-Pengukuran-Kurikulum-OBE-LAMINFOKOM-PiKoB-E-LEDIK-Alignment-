@@ -109,9 +109,7 @@ def seed_all():
     print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, 5 matriks, 3 RPS, 5 mahasiswa.")
 
 
-app = create_app()
-seed_all()
-
-
 if __name__ == "__main__":
+    app = create_app()
+    seed_all()
     app.run(debug=True, port=5000)
