@@ -84,12 +84,19 @@ if DATABASE_URI:
         except Exception:
             pass
 
-    # 3. Otomatis tambahkan sslmode=require untuk koneksi Supabase agar SSL stabil
+    # 3. Supabase: gunakan Session mode pooler (port 5432) bukan Transaction mode (port 6543)
+    # Transaction mode (6543) agresif memutus koneksi SSL dan tidak cocok dengan SQLAlchemy ORM.
+    # Session mode (5432) pada pooler.supabase.com tetap IPv4-compatible dan stabil untuk ORM.
+    if "pooler.supabase.com" in DATABASE_URI:
+        DATABASE_URI = DATABASE_URI.replace(":6543/", ":5432/")
+
+    # 4. Otomatis tambahkan sslmode=require untuk koneksi Supabase agar SSL stabil
     if "supabase.co" in DATABASE_URI or "supabase.com" in DATABASE_URI:
         if "?" not in DATABASE_URI:
             DATABASE_URI += "?sslmode=require"
         elif "sslmode=" not in DATABASE_URI:
             DATABASE_URI += "&sslmode=require"
+
 
     # 4. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
 

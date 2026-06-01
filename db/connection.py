@@ -22,12 +22,20 @@ def init_db():
     }
 
     if not is_sqlite:
-        from sqlalchemy.pool import NullPool
         engine_args["pool_pre_ping"] = True
-        engine_args["pool_recycle"] = 300
-        engine_args["poolclass"] = NullPool
+        engine_args["pool_recycle"] = 280
+        engine_args["pool_size"] = 2
+        engine_args["max_overflow"] = 3
+        engine_args["connect_args"] = {
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
+            "connect_timeout": 10,
+        }
 
     state.engine = create_engine(config.DATABASE_URI, **engine_args)
+
 
 
     session_factory = sessionmaker(bind=state.engine)
