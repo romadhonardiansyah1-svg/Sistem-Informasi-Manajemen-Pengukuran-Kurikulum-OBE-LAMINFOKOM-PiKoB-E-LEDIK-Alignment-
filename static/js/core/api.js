@@ -17,7 +17,7 @@ var Api = (function () {
 
         return fetch(path, options)
             .then(function (response) {
-                if (response.status === 401) {
+                if (response.status === 401 && !path.includes("/api/auth/login")) {
                     window.location.href = "/login";
                     return Promise.reject("Sesi habis");
                 }
