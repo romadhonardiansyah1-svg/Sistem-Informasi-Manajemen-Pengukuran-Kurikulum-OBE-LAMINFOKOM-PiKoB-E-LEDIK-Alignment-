@@ -79,11 +79,21 @@ def _register_page_routes(app):
             inspector = inspect(state.engine)
             status["tables"] = inspector.get_table_names()
             status["connection_ok"] = True
+            
+            if "users" in status["tables"]:
+                from models.user import User
+                admin = state.db.query(User).filter_by(username="admin").first()
+                status["admin_user_exists"] = admin is not None
+                status["users_count"] = state.db.query(User).count()
+                if admin:
+                    status["admin_password_hash_empty"] = not bool(admin.password_hash)
+            
             conn.close()
         except Exception as e:
             status["error"] = str(e)
             
         return status
+
 
 
 
