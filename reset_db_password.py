@@ -17,18 +17,49 @@ def main():
     print("==================================================")
     print("         OBE DATABASE PASSWORD RESET TOOL         ")
     print("==================================================")
-    print("Alamat database Anda:")
-    print("aws-1-ap-southeast-1.pooler.supabase.com (Session Mode, port 5432)")
+    print("Untuk menghindari kesalahan tenant ID, silakan gunakan")
+    print("Connection URI lengkap dari Dashboard Supabase Anda.")
+    print("--------------------------------------------------")
+    print("1. Buka Supabase Dashboard > Project Settings > Database")
+    print("2. Scroll ke 'Connection string' > pilih 'URI'")
+    print("3. Salin URI tersebut (biasanya berakhiran :5432/postgres atau :6543/postgres)")
     print("--------------------------------------------------")
     
+    db_uri_input = input("Tempel (Paste) Connection URI dari Supabase: ").strip()
+    if not db_uri_input:
+        print("\n[ERROR] Connection URI tidak boleh kosong!")
+        return
+
     password_db = input("Masukkan PASSWORD DATABASE Supabase Anda: ").strip()
     if not password_db:
         print("\n[ERROR] Password tidak boleh kosong!")
         return
 
-    # Hubungkan ke Supabase (menggunakan port 5432 yang stabil)
-    db_uri = f"postgresql://postgres:{password_db}@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
-    
+    # Ganti placeholder password [YOUR-PASSWORD] jika ada
+    db_uri = db_uri_input
+    if "[YOUR-PASSWORD]" in db_uri:
+        db_uri = db_uri.replace("[YOUR-PASSWORD]", password_db)
+    elif ":YOUR_PASSWORD@" in db_uri:
+        db_uri = db_uri.replace("YOUR_PASSWORD", password_db)
+    else:
+        # Jika tidak ada placeholder, coba ganti password di antara ':' kedua dan '@'
+        # postgresql://username:password@host...
+        try:
+            from urllib.parse import quote_plus
+            scheme, rest = db_uri.split("://", 1)
+            if "@" in rest:
+                auth, host_db = rest.rsplit("@", 1)
+                if ":" in auth:
+                    username, _ = auth.split(":", 1)
+                    safe_password = quote_plus(password_db)
+                    db_uri = f"{scheme}://{username}:{safe_password}@{host_db}"
+        except Exception:
+            pass
+
+    # Paksa gunakan port 5432 (Session Mode) untuk kestabilan koneksi dari komputer lokal
+    if ":6543/" in db_uri:
+        db_uri = db_uri.replace(":6543/", ":5432/")
+
     print("\nMenghubungkan ke database Supabase...")
     try:
         engine = create_engine(db_uri)
@@ -58,7 +89,8 @@ def main():
         session.close()
     except Exception as e:
         print(f"\n[ERROR] Gagal terhubung ke database: {e}")
-        print("Pastikan password database yang Anda masukkan sudah benar.")
+        print("Pastikan Connection URI dan password database yang Anda masukkan sudah benar.")
+
 
 if __name__ == "__main__":
     main()
