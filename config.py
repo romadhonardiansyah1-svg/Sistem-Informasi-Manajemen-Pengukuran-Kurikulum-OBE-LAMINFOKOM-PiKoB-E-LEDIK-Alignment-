@@ -13,7 +13,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Set environment variable DB_MODE untuk memilih.
 # Untuk Supabase, set DATABASE_URL dari dashboard Supabase.
 
-DB_MODE = os.environ.get("DB_MODE", "sqlite")
+DB_MODE = os.environ.get("DB_MODE")
+if not DB_MODE:
+    if os.environ.get("DATABASE_URL"):
+        DB_MODE = "supabase"
+    else:
+        DB_MODE = "sqlite"
 
 # Konfigurasi MySQL Laragon
 MYSQL_HOST = os.environ.get("MYSQL_HOST", "127.0.0.1")
