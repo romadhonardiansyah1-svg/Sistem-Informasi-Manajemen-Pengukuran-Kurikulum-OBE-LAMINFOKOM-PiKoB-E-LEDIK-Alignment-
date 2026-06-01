@@ -43,7 +43,12 @@
                 if (data.status === "success") {
                     window.location.href = "/";
                 } else {
-                    errorEl.textContent = data.message || ("HTTP " + result.status + ": Login gagal");
+                    var msg = data.message || ("HTTP " + result.status + ": Login gagal");
+                    if (data.traceback) {
+                        msg += "\n\nTraceback:\n" + data.traceback;
+                    }
+                    errorEl.style.whiteSpace = "pre-wrap";
+                    errorEl.textContent = msg;
                     errorEl.style.display = "block";
                 }
             })
