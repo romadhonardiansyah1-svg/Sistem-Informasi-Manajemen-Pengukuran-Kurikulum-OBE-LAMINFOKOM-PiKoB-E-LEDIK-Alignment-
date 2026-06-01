@@ -109,42 +109,50 @@ def seed_all():
     session = state.db
 
     existing = session.query(User).filter_by(username="admin").first()
-    if existing is not None:
-        return
-
-    # User admin
-    admin = User(
-        username="admin",
-        password_hash=hash_password("admin123"),
-        nama="Administrator",
-        email="admin@prodi.ac.id",
-        role="kaprodi",
-    )
-    session.add(admin)
-    session.flush()
+    if existing is None:
+        # User admin
+        admin = User(
+            username="admin",
+            password_hash=hash_password("admin123"),
+            nama="Administrator",
+            email="admin@prodi.ac.id",
+            role="kaprodi",
+        )
+        session.add(admin)
+        try:
+            session.commit()
+            print("User admin berhasil dibuat secara mandiri.")
+        except Exception as e:
+            session.rollback()
+            print(f"Gagal membuat user admin: {e}")
 
     # Data kurikulum
-    prodi_id = seed_institution()
-    periode_id = seed_periode(prodi_id)
-    seed_profil_lulusan(periode_id)
-    seed_cpl_prodi(periode_id)
-    seed_bahan_kajian(periode_id)
-    seed_mata_kuliah(periode_id)
-    seed_cpmk()
+    try:
+        prodi_id = seed_institution()
+        periode_id = seed_periode(prodi_id)
+        seed_profil_lulusan(periode_id)
+        seed_cpl_prodi(periode_id)
+        seed_bahan_kajian(periode_id)
+        seed_mata_kuliah(periode_id)
+        seed_cpmk()
 
-    # Matriks pemetaan
-    seed_cpl_pl_matrix()
-    seed_cpl_bk_matrix()
-    seed_bk_mk_matrix()
-    seed_cpl_mk_matrix()
-    seed_cpmk_mk_matrix()
+        # Matriks pemetaan
+        seed_cpl_pl_matrix()
+        seed_cpl_bk_matrix()
+        seed_bk_mk_matrix()
+        seed_cpl_mk_matrix()
+        seed_cpmk_mk_matrix()
 
-    # RPS dan Mahasiswa
-    seed_rps(periode_id)
-    seed_mahasiswa(prodi_id)
+        # RPS dan Mahasiswa
+        seed_rps(periode_id)
+        seed_mahasiswa(prodi_id)
 
-    session.commit()
-    print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, 5 matriks, 3 RPS, 5 mahasiswa.")
+        session.commit()
+        print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, 5 matriks, 3 RPS, 5 mahasiswa.")
+    except Exception as e:
+        session.rollback()
+        print(f"Seeding kurikulum dilewati atau gagal (kemungkinan data sudah ada): {e}")
+
 
 
 if __name__ == "__main__":
