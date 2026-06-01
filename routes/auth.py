@@ -11,21 +11,30 @@ from utils.response import success, error
 
 def login():
     """POST /api/auth/login"""
-    data = request.get_json(silent=True)
-    if data is None:
-        return error("Request body kosong"), 400
+    try:
+        data = request.get_json(silent=True)
+        if data is None:
+            return error("Request body kosong"), 400
 
-    username = data.get("username", "")
-    password = data.get("password", "")
+        username = data.get("username", "")
+        password = data.get("password", "")
 
-    user = authenticate(username, password)
-    if user is None:
-        return error("Username atau password salah"), 401
+        user = authenticate(username, password)
+        if user is None:
+            return error("Username atau password salah"), 401
 
-    session["user_id"] = user["id"]
-    session["role"] = user["role"]
+        session["user_id"] = user["id"]
+        session["role"] = user["role"]
 
-    return success(data=user, message="Login berhasil")
+        return success(data=user, message="Login berhasil")
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return {
+            "status": "error",
+            "message": f"Server Error:\n{tb}"
+        }, 500
+
 
 
 def logout():
