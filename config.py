@@ -69,10 +69,26 @@ if DATABASE_URI:
     if DATABASE_URI.startswith("postgres://"):
         DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
         
-    # 2. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
+    # 2. Otomatis url-encode password jika mengandung karakter spesial seperti @
+    if DATABASE_URI.startswith("postgresql://") or DATABASE_URI.startswith("mysql://"):
+        from urllib.parse import quote_plus
+        try:
+            scheme, rest = DATABASE_URI.split("://", 1)
+            if "@" in rest:
+                auth, host_db = rest.rsplit("@", 1)
+                if ":" in auth:
+                    username, password = auth.split(":", 1)
+                    if "%" not in password:
+                        safe_password = quote_plus(password)
+                        DATABASE_URI = f"{scheme}://{username}:{safe_password}@{host_db}"
+        except Exception:
+            pass
+
+    # 3. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
     if DATABASE_URI.startswith("https://") or DATABASE_URI.startswith("http://"):
         raise ValueError(
             "DATABASE_URI / DATABASE_URL is set to an HTTP/HTTPS URL (starts with https:// or http://). "
+
             "SQLAlchemy requires a direct database connection URI starting with 'postgresql://' or 'postgres://'. "
             "Please go to your Supabase Dashboard > Project Settings > Database > Connection string > URI, "
             "copy the URI (replace [YOUR-PASSWORD] with your DB password), and update the Vercel environment variable."
