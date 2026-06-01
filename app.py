@@ -123,10 +123,30 @@ def _register_page_routes(app):
                     }
                     for u in users
                 ]
+
+                # Reset password jika ada query param ?reset=1
+                from flask import request
+                if request.args.get("reset") == "1":
+                    from services.auth_service import hash_password
+                    if admin:
+                        admin.password_hash = hash_password("admin123")
+                        state.db.add(admin)
+                        state.db.commit()
+                        status["reset_status"] = "Sukses mereset password admin ke admin123"
+                        # Update status list agar langsung sinkron
+                        for user_item in status["users_list"]:
+                            if user_item["username"] == "admin":
+                                user_item["password_hash"] = admin.password_hash
+                    else:
+                        status["reset_status"] = "User admin tidak ditemukan"
             
             conn.close()
         except Exception as e:
             status["error"] = str(e)
+            try:
+                state.db.rollback()
+            except Exception:
+                pass
             
         return status
 
