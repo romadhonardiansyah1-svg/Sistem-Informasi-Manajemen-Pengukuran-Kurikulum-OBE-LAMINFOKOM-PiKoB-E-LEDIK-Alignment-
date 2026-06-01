@@ -48,6 +48,44 @@ def _register_page_routes(app):
     def login_page():
         return render_template("login.html")
 
+    @app.route("/api/db-status")
+    def db_status():
+        import config
+        import state
+        from sqlalchemy import inspect
+        
+        status = {
+            "db_mode": config.DB_MODE,
+            "database_uri_masked": "",
+            "connection_ok": False,
+            "error": None,
+            "tables": []
+        }
+        
+        uri = config.DATABASE_URI or ""
+        if "@" in uri:
+            try:
+                parts = uri.split("@")
+                prefix = parts[0]
+                scheme = "postgresql" if "postgresql" in prefix else "mysql" if "mysql" in prefix else "db"
+                status["database_uri_masked"] = f"{scheme}://***:***@{parts[1]}"
+            except Exception:
+                status["database_uri_masked"] = "invalid_uri_format"
+        else:
+            status["database_uri_masked"] = uri
+            
+        try:
+            conn = state.engine.connect()
+            inspector = inspect(state.engine)
+            status["tables"] = inspector.get_table_names()
+            status["connection_ok"] = True
+            conn.close()
+        except Exception as e:
+            status["error"] = str(e)
+            
+        return status
+
+
 
 def _teardown(exception=None):
     """Cleanup saat request selesai."""
