@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="app-layout">
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">OBE</div>
+            <span>Kurikulum OBE</span>
+        </div>
+        <div id="sidebar-menu"></div>
+    </nav>
+
+    <div class="main-content">
+        <header class="app-header">
+            <h2 class="header-title" id="page-title">Dashboard</h2>
+            <div class="header-center" id="header-periode"></div>
+            <div class="header-user">
+                <span id="header-user-name"></span>
+                <span id="header-user-role" class="badge badge-success"></span>
+                <button class="btn btn-sm btn-outline" id="btn-logout">Keluar</button>
+            </div>
+        </header>
+
+        <main class="page-content" id="page-content">
+            <!-- Konten halaman di-render oleh JavaScript -->
+        </main>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal-dialog" id="modal-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-title"></h3>
+            <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-footer" id="modal-footer"></div>
+    </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/core/state.js"></script>
+<script src="/static/js/core/api.js"></script>
+<script src="/static/js/core/event_bus.js"></script>
+<script src="/static/js/core/router.js"></script>
+<script src="/static/js/utils/dom.js"></script>
+<script src="/static/js/utils/format.js"></script>
+<script src="/static/js/utils/validate.js"></script>
+<script src="/static/js/components/sidebar.js"></script>
+<script src="/static/js/components/header.js"></script>
+<script src="/static/js/components/modal.js"></script>
+<script src="/static/js/components/toast.js"></script>
+<script src="/static/js/components/table.js"></script>
+<script src="/static/js/components/form_builder.js"></script>
+<script src="/static/js/components/matrix_grid.js"></script>
+<script src="/static/js/components/spider_chart.js"></script>
+<script src="/static/js/pages/dashboard.js"></script>
+<script src="/static/js/pages/master_data.js"></script>
+<script src="/static/js/pages/matrix_page.js"></script>
+<script src="/static/js/pages/rps_page.js"></script>
+<script src="/static/js/pages/penilaian_page.js"></script>
+<script src="/static/js/pages/nilai_page.js"></script>
+<script src="/static/js/pages/report_page.js"></script>
+<script src="/static/js/pages/pemetaan_page.js"></script>
+<script src="/static/js/pages/organisasi_page.js"></script>
+<script src="/static/js/pages/peta_cpl_page.js"></script>
+<script src="/static/js/pages/mk_subcpmk_page.js"></script>
+<script src="/static/js/pages/rumusan_page.js"></script>
+<script src="/static/js/pages/identitas_page.js"></script>
+<script src="/static/js/pages/log_peninjauan_page.js"></script>
+{% endblock %}

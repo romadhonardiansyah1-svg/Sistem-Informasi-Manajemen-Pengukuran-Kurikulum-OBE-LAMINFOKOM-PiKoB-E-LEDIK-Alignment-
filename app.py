@@ -1,0 +1,117 @@
+"""
+Entry point aplikasi Sistem Informasi Kurikulum OBE.
+Flask app factory.
+"""
+
+import os
+from flask import Flask, render_template, redirect, session
+
+import config
+import state
+from db.connection import init_db, close_db
+from db.migrate import create_all
+from routes.registry import register_routes
+
+
+def create_app():
+    """Membuat dan mengkonfigurasi Flask app."""
+    app = Flask(
+        __name__,
+        static_folder="static",
+        template_folder="templates",
+    )
+
+    app.secret_key = config.SECRET_KEY
+    state.app = app
+
+    init_db()
+    create_all()
+
+    register_routes(app)
+    _register_page_routes(app)
+
+    app.teardown_appcontext(_teardown)
+
+    return app
+
+
+def _register_page_routes(app):
+    """Route untuk halaman HTML."""
+
+    @app.route("/")
+    def index():
+        if "user_id" not in session:
+            return redirect("/login")
+        return render_template("app.html")
+
+    @app.route("/login")
+    def login_page():
+        return render_template("login.html")
+
+
+def _teardown(exception=None):
+    """Cleanup saat request selesai."""
+    state.current_user = None
+    if state.db:
+        state.db.remove()
+
+
+def seed_all():
+    """Seed seluruh data awal jika database masih kosong."""
+    from models.user import User
+    from services.auth_service import hash_password
+    from db.seed import seed_institution, seed_periode, seed_profil_lulusan
+    from db.seed_cpl_bk import seed_cpl_prodi, seed_bahan_kajian
+    from db.seed_mk import seed_mata_kuliah
+    from db.seed_matrix import seed_cpl_pl_matrix, seed_cpl_bk_matrix, seed_bk_mk_matrix
+    from db.seed_cpmk import seed_cpmk
+    from db.seed_cpmk_mk import seed_cpmk_mk_matrix, seed_cpl_mk_matrix
+    from db.seed_rps import seed_rps, seed_mahasiswa
+
+    session = state.db
+
+    existing = session.query(User).filter_by(username="admin").first()
+    if existing is not None:
+        return
+
+    # User admin
+    admin = User(
+        username="admin",
+        password_hash=hash_password("admin123"),
+        nama="Administrator",
+        email="admin@prodi.ac.id",
+        role="kaprodi",
+    )
+    session.add(admin)
+    session.flush()
+
+    # Data kurikulum
+    prodi_id = seed_institution()
+    periode_id = seed_periode(prodi_id)
+    seed_profil_lulusan(periode_id)
+    seed_cpl_prodi(periode_id)
+    seed_bahan_kajian(periode_id)
+    seed_mata_kuliah(periode_id)
+    seed_cpmk()
+
+    # Matriks pemetaan
+    seed_cpl_pl_matrix()
+    seed_cpl_bk_matrix()
+    seed_bk_mk_matrix()
+    seed_cpl_mk_matrix()
+    seed_cpmk_mk_matrix()
+
+    # RPS dan Mahasiswa
+    seed_rps(periode_id)
+    seed_mahasiswa(prodi_id)
+
+    session.commit()
+    print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, 5 matriks, 3 RPS, 5 mahasiswa.")
+
+
+app = create_app()
+seed_all()
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
