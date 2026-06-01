@@ -42,7 +42,32 @@ def create_app():
 
     app.teardown_appcontext(_teardown)
 
+    # Global error handler: tangkap SEMUA exception dan kembalikan JSON
+    # agar frontend tidak pernah menerima HTML 500 dari Flask.
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        tb = traceback.format_exc()
+        print(f"Unhandled exception:\n{tb}")
+        return {
+            "status": "error",
+            "message": f"Server error: {str(e)}",
+            "traceback": tb,
+        }, 500
+
+    @app.errorhandler(500)
+    def handle_500(e):
+        import traceback
+        tb = traceback.format_exc()
+        print(f"500 error:\n{tb}")
+        return {
+            "status": "error",
+            "message": f"Internal server error: {str(e)}",
+            "traceback": tb,
+        }, 500
+
     return app
+
 
 
 def _register_page_routes(app):
