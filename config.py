@@ -52,7 +52,23 @@ DATABASE_URI = os.environ.get(
     _DB_URI_MAP.get(DB_MODE, _SQLITE_URI),
 )
 
+# Normalisasi dan validasi URI Database
+if DATABASE_URI:
+    # 1. Konversi postgres:// menjadi postgresql:// untuk kompatibilitas SQLAlchemy
+    if DATABASE_URI.startswith("postgres://"):
+        DATABASE_URI = DATABASE_URI.replace("postgres://", "postgresql://", 1)
+        
+    # 2. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
+    if DATABASE_URI.startswith("https://") or DATABASE_URI.startswith("http://"):
+        raise ValueError(
+            "DATABASE_URI / DATABASE_URL is set to an HTTP/HTTPS URL (starts with https:// or http://). "
+            "SQLAlchemy requires a direct database connection URI starting with 'postgresql://' or 'postgres://'. "
+            "Please go to your Supabase Dashboard > Project Settings > Database > Connection string > URI, "
+            "copy the URI (replace [YOUR-PASSWORD] with your DB password), and update the Vercel environment variable."
+        )
+
 DATABASE_ECHO = os.environ.get("DATABASE_ECHO", "false").lower() == "true"
+
 
 
 # -- Flask --
