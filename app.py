@@ -55,18 +55,8 @@ def create_app():
             "traceback": tb,
         }, 500
 
-    @app.errorhandler(500)
-    def handle_500(e):
-        import traceback
-        tb = traceback.format_exc()
-        print(f"500 error:\n{tb}")
-        return {
-            "status": "error",
-            "message": f"Internal server error: {str(e)}",
-            "traceback": tb,
-        }, 500
-
     return app
+
 
 
 
