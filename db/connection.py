@@ -22,10 +22,13 @@ def init_db():
     }
 
     if not is_sqlite:
+        from sqlalchemy.pool import NullPool
         engine_args["pool_pre_ping"] = True
         engine_args["pool_recycle"] = 300
+        engine_args["poolclass"] = NullPool
 
     state.engine = create_engine(config.DATABASE_URI, **engine_args)
+
 
     session_factory = sessionmaker(bind=state.engine)
     state.db = scoped_session(session_factory)

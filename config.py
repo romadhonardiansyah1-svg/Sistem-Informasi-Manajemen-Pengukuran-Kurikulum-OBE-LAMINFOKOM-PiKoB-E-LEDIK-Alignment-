@@ -84,7 +84,15 @@ if DATABASE_URI:
         except Exception:
             pass
 
-    # 3. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
+    # 3. Otomatis tambahkan sslmode=require untuk koneksi Supabase agar SSL stabil
+    if "supabase.co" in DATABASE_URI or "supabase.com" in DATABASE_URI:
+        if "?" not in DATABASE_URI:
+            DATABASE_URI += "?sslmode=require"
+        elif "sslmode=" not in DATABASE_URI:
+            DATABASE_URI += "&sslmode=require"
+
+    # 4. Cek jika menggunakan HTTP/HTTPS URL (biasanya Supabase API URL, bukan DB URI)
+
     if DATABASE_URI.startswith("https://") or DATABASE_URI.startswith("http://"):
         raise ValueError(
             "DATABASE_URI / DATABASE_URL is set to an HTTP/HTTPS URL (starts with https:// or http://). "
