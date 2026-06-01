@@ -18,16 +18,12 @@ app = None
 init_error = None
 
 try:
-    from app import create_app, seed_all
+    from app import create_app
     app = create_app()
+    # Data sudah ada di Supabase, tidak perlu seed lagi saat cold start.
+    # Seed hanya dijalankan sekali saat pertama kali atau lewat lokal.
 
-    # Seed data saat cold start (hanya jika tabel kosong)
-    try:
-        seed_all()
-    except Exception as e:
-        print(f"Seed error: {e}")
-        # Keep going even if seeding fails
-        pass
+
 
 except Exception as e:
     init_error = traceback.format_exc()

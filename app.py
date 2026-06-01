@@ -25,10 +25,16 @@ def create_app():
     state.app = app
 
     init_db()
-    try:
-        create_all()
-    except Exception as e:
-        print(f"create_all warning (ignored): {e}")
+
+    # Di Vercel, skip create_all() karena tabel sudah dibuat di Supabase.
+    # create_all() menjalankan DDL yang menyebabkan SSL drop pada pooler.
+    _is_vercel = os.environ.get("VERCEL", "") == "1"
+    if not _is_vercel:
+        try:
+            create_all()
+        except Exception as e:
+            print(f"create_all warning (ignored): {e}")
+
 
 
     register_routes(app)
