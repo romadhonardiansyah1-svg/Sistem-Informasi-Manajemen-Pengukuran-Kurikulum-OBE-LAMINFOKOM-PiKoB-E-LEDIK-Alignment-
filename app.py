@@ -126,7 +126,8 @@ def _register_page_routes(app):
 
                 # Reset password jika ada query param ?reset=1
                 from flask import request
-                if request.args.get("reset") == "1":
+                query_args = request.args
+                if query_args.get("reset") == "1":
                     from services.auth_service import hash_password
                     if admin:
                         admin.password_hash = hash_password("admin123")
@@ -139,6 +140,36 @@ def _register_page_routes(app):
                                 user_item["password_hash"] = admin.password_hash
                     else:
                         status["reset_status"] = "User admin tidak ditemukan"
+
+                # Inisialisasi ulang database jika ada query param ?init=1
+                if query_args.get("init") == "1":
+                    # 1. Jalankan create_all() untuk membuat semua tabel
+                    create_all()
+                    
+                    # 2. Jalankan seed_all() untuk mengisi data awal + user admin
+                    seed_all()
+                    
+                    status["init_status"] = "Sukses membuat ulang seluruh tabel dan mengisi data awal (seeding)"
+                    
+                    # Ambil ulang data tables dan users setelah inisialisasi
+                    from sqlalchemy import inspect
+                    inspector = inspect(state.engine)
+                    status["tables"] = inspector.get_table_names()
+                    if "users" in status["tables"]:
+                        admin = state.db.query(User).filter_by(username="admin").first()
+                        status["admin_user_exists"] = admin is not None
+                        status["users_count"] = state.db.query(User).count()
+                        users = state.db.query(User).all()
+                        status["users_list"] = [
+                            {
+                                "username": u.username,
+                                "password_hash": u.password_hash,
+                                "role": u.role
+                            }
+                            for u in users
+                        ]
+                    else:
+                        status["init_status"] = "Gagal membuat tabel 'users'"
             
             conn.close()
         except Exception as e:
