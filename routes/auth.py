@@ -14,14 +14,14 @@ def login():
     try:
         data = request.get_json(silent=True)
         if data is None:
-            return error("Request body kosong"), 400
+            return error("Request body kosong")
 
         username = data.get("username", "")
         password = data.get("password", "")
 
         user = authenticate(username, password)
         if user is None:
-            return error("Username atau password salah"), 401
+            return error("Username atau password salah", status=401)
 
         session["user_id"] = user["id"]
         session["role"] = user["role"]
