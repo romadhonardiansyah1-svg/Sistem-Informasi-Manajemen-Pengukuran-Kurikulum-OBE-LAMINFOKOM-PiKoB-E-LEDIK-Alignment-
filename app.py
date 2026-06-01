@@ -112,6 +112,17 @@ def _register_page_routes(app):
                 status["users_count"] = state.db.query(User).count()
                 if admin:
                     status["admin_password_hash_empty"] = not bool(admin.password_hash)
+                
+                # Tambahkan list user untuk debugging
+                users = state.db.query(User).all()
+                status["users_list"] = [
+                    {
+                        "username": u.username,
+                        "password_hash": u.password_hash,
+                        "role": u.role
+                    }
+                    for u in users
+                ]
             
             conn.close()
         except Exception as e:
