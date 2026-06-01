@@ -25,7 +25,11 @@ def create_app():
     state.app = app
 
     init_db()
-    create_all()
+    try:
+        create_all()
+    except Exception as e:
+        print(f"create_all warning (ignored): {e}")
+
 
     register_routes(app)
     _register_page_routes(app)
