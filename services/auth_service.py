@@ -21,17 +21,36 @@ def authenticate(username, password):
     """
     Mencari user berdasarkan username dan memverifikasi password.
     Return: user dict atau None.
+    Retry hingga 3x jika koneksi database gagal (SSL drop).
     """
+    import time
     from models.user import User
+    from sqlalchemy.exc import OperationalError, DisconnectionError
 
-    user = state.db.query(User).filter_by(username=username).first()
-    if user is None:
-        return None
+    last_err = None
+    for attempt in range(3):
+        try:
+            user = state.db.query(User).filter_by(username=username).first()
+            if user is None:
+                return None
 
-    if not verify_password(password, user.password_hash):
-        return None
+            if not verify_password(password, user.password_hash):
+                return None
 
-    return user.to_dict()
+            return user.to_dict()
+        except (OperationalError, DisconnectionError) as e:
+            last_err = e
+            # Rollback stale session dan coba lagi
+            try:
+                state.db.rollback()
+                state.db.remove()
+            except Exception:
+                pass
+            if attempt < 2:
+                time.sleep(0.5 * (attempt + 1))  # 0.5s, 1s backoff
+                continue
+            raise last_err
+
 
 
 def create_user(username, password, nama, email, role, prodi_id=None, fakultas_id=None):
