@@ -53,5 +53,5 @@ def get_peta_cpl():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/peta-cpl", get_peta_cpl, "view_all"),
+    ("GET", "/api/peta-cpl", get_peta_cpl, "view_kurikulum"),
 ]

@@ -6,8 +6,9 @@ dan mahasiswa contoh untuk input nilai.
 
 import state
 from models.rps import RPS, RPSMinggu
-from models.user import Mahasiswa
+from models.user import Mahasiswa, User
 from models.mata_kuliah import MataKuliah
+from services.auth_service import hash_password
 
 
 def seed_rps(periode_id):
@@ -52,7 +53,12 @@ def seed_rps(periode_id):
 
 
 def seed_mahasiswa(prodi_id):
-    """Seed 5 mahasiswa contoh."""
+    """
+    Seed 5 mahasiswa contoh + akun login masing-masing.
+    Setiap mahasiswa otomatis memperoleh akun User (role=mahasiswa)
+    dengan username = NIM dan password awal = NIM, lalu ditautkan via user_id
+    sehingga mahasiswa dapat login dan melihat laporan capaian pribadinya.
+    """
     session = state.db
     data = [
         ("2024001", "Andi Pratama", 2024),
@@ -62,7 +68,22 @@ def seed_mahasiswa(prodi_id):
         ("2024005", "Eka Putri", 2024),
     ]
     for nim, nama, angkatan in data:
+        # Akun login mahasiswa (username = NIM, password awal = NIM).
+        akun = session.query(User).filter_by(username=nim).first()
+        if akun is None:
+            akun = User(
+                username=nim,
+                password_hash=hash_password(nim),
+                nama=nama,
+                email=nim + "@student.prodi.ac.id",
+                role="mahasiswa",
+                prodi_id=prodi_id,
+            )
+            session.add(akun)
+            session.flush()
+
         mhs = Mahasiswa(
+            user_id=akun.id,
             nim=nim,
             nama=nama,
             angkatan=angkatan,

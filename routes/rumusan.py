@@ -121,6 +121,6 @@ def get_rumusan_cpl():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/rumusan-mk", get_rumusan_mk, "view_all"),
-    ("GET", "/api/rumusan-cpl", get_rumusan_cpl, "view_all"),
+    ("GET", "/api/rumusan-mk", get_rumusan_mk, "view_kurikulum"),
+    ("GET", "/api/rumusan-cpl", get_rumusan_cpl, "view_kurikulum"),
 ]

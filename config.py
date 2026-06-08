@@ -169,6 +169,40 @@ ALLOWED_EXTENSIONS = {"pdf"}
 MAX_UPLOAD_SIZE_MB = 10
 
 
+# -- Supabase Storage (penyimpanan file PDF persisten) --
+# Di Vercel, filesystem bersifat read-only/ephemeral, sehingga file PDF
+# (notulensi, bukti fisik, dokumen reuni) disimpan ke Supabase Storage.
+# Jika SUPABASE_URL & SUPABASE_SERVICE_KEY tidak di-set (mis. dev lokal),
+# storage_service otomatis fallback ke disk lokal (UPLOAD_DIR).
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_SERVICE_KEY = os.environ.get(
+    "SUPABASE_SERVICE_KEY",
+    os.environ.get("SUPABASE_KEY", ""),
+)
+SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "obe-dokumen")
+
+
+# -- Keamanan endpoint diagnostik --
+# Token wajib untuk mengakses detail/aksi berbahaya di /api/db-status.
+DB_ADMIN_TOKEN = os.environ.get("DB_ADMIN_TOKEN", "")
+
+
+# -- Jenis Agenda Penjaminan Mutu (modul dokumen/notulensi/reuni) --
+JENIS_AGENDA = (
+    "peninjauan_kurikulum",
+    "reuni_alumni",
+    "fgd_lokakarya",
+    "rapat_mutu",
+)
+
+JENIS_AGENDA_LABELS = {
+    "peninjauan_kurikulum": "Peninjauan Kurikulum",
+    "reuni_alumni": "Reuni Alumni",
+    "fgd_lokakarya": "FGD / Lokakarya",
+    "rapat_mutu": "Rapat Mutu",
+}
+
+
 # -- Periode --
 
 PERIODE_DURATION_YEARS = 5
@@ -195,9 +229,20 @@ ROLES = (
     "admin_universitas",
     "dekan",
     "kaprodi",
+    "tim_kurikulum",
     "dosen",
     "mahasiswa",
 )
+
+# Label role yang ramah untuk ditampilkan di UI.
+ROLE_LABELS = {
+    "admin_universitas": "Admin Universitas",
+    "dekan": "Dekan / Fakultas",
+    "kaprodi": "Kaprodi",
+    "tim_kurikulum": "Tim Kurikulum",
+    "dosen": "Dosen / DPA",
+    "mahasiswa": "Mahasiswa",
+}
 
 
 # -- Teknik Penilaian --

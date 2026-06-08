@@ -27,7 +27,10 @@ var Router = (function () {
         "penilaian":        { loader: "PenilaianPage",  title: "Penilaian" },
         "nilai":            { loader: "NilaiPage",      title: "Input Nilai" },
         "report":           { loader: "ReportPage",     title: "Laporan CPL" },
-        "log-peninjauan":   { loader: "LogPeninjauanPage", title: "Log Peninjauan" },
+        "mahasiswa-report": { loader: "MahasiswaReportPage", title: "Laporan Capaian Saya" },
+        "agenda":           { loader: "AgendaPage",     title: "Agenda & Dokumen Mutu" },
+        "log-peninjauan":   { loader: "AgendaPage",     title: "Agenda & Dokumen Mutu" },
+        "user-management":  { loader: "UserManagementPage", title: "Manajemen Pengguna" },
     };
 
     function navigateTo(pageKey) {
@@ -49,8 +52,18 @@ var Router = (function () {
         EventBus.emit("page:changed", pageKey);
     }
 
-    function init() {
-        navigateTo("dashboard");
+    function init(user) {
+        // Tentukan halaman awal sesuai role/hak akses.
+        var actions = (user && user.allowed_actions) || [];
+        var landing = "dashboard";
+        if (user && user.role === "mahasiswa") {
+            landing = "mahasiswa-report";
+        } else if (actions.indexOf("view_kurikulum") === -1) {
+            if (actions.indexOf("view_report_self") !== -1) landing = "mahasiswa-report";
+            else if (actions.indexOf("view_report") !== -1) landing = "report";
+            else if (actions.indexOf("view_dokumen") !== -1) landing = "agenda";
+        }
+        navigateTo(landing);
     }
 
     return { navigateTo: navigateTo, init: init, registry: PAGE_REGISTRY };
@@ -62,8 +75,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (res.status === "success") {
             AppState.user = res.data;
             HeaderComponent.init(res.data);
-            SidebarComponent.init(res.data.role);
-            Router.init();
+            SidebarComponent.init(res.data.role, res.data.allowed_actions);
+            Router.init(res.data);
         }
     });
 });

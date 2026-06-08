@@ -61,5 +61,5 @@ def get_pemetaan_cpl_bk_mk():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/pemetaan-cpl-bk-mk", get_pemetaan_cpl_bk_mk, "view_all"),
+    ("GET", "/api/pemetaan-cpl-bk-mk", get_pemetaan_cpl_bk_mk, "view_kurikulum"),
 ]

@@ -2,11 +2,39 @@
 Route autentikasi: login, logout, info session.
 """
 
-from flask import request, session, jsonify
+from flask import request, session
 
 from services.auth_service import authenticate
+from services.permission import get_allowed_actions, get_scope
 import state
 from utils.response import success, error
+
+
+def _build_session_payload(user_dict):
+    """
+    Membentuk payload aman untuk frontend dari dict user:
+    - buang password_hash (jangan pernah dikirim ke client)
+    - sertakan allowed_actions + scope sesuai role (untuk filter menu di frontend)
+    - jika role mahasiswa, sertakan mahasiswa_id/nim/angkatan agar laporan bisa self-scoped
+    """
+    role = user_dict.get("role")
+    payload = {k: v for k, v in user_dict.items() if k != "password_hash"}
+    payload["allowed_actions"] = get_allowed_actions(role)
+    payload["scope"] = get_scope(role)
+
+    if role == "mahasiswa":
+        from models.user import Mahasiswa
+        mhs = (
+            state.db.query(Mahasiswa)
+            .filter_by(user_id=user_dict.get("id"))
+            .first()
+        )
+        if mhs is not None:
+            payload["mahasiswa_id"] = mhs.id
+            payload["nim"] = mhs.nim
+            payload["angkatan"] = mhs.angkatan
+
+    return payload
 
 
 def login():
@@ -26,7 +54,7 @@ def login():
         session["user_id"] = user["id"]
         session["role"] = user["role"]
 
-        return success(data=user, message="Login berhasil")
+        return success(data=_build_session_payload(user), message="Login berhasil")
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
@@ -34,7 +62,6 @@ def login():
             "status": "error",
             "message": f"Server Error:\n{tb}"
         }, 500
-
 
 
 def logout():
@@ -56,7 +83,7 @@ def session_info():
         session.clear()
         return error("Sesi tidak valid", status=401)
 
-    return success(data=user.to_dict())
+    return success(data=_build_session_payload(user.to_dict()))
 
 
 ROUTE_DEFINITIONS = [

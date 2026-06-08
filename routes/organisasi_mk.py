@@ -41,5 +41,5 @@ def get_organisasi_mk():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/organisasi-mk", get_organisasi_mk, "view_all"),
+    ("GET", "/api/organisasi-mk", get_organisasi_mk, "view_kurikulum"),
 ]

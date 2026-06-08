@@ -1,6 +1,10 @@
 /**
  * Sidebar navigation component.
  * Menu structure with inline SVG icons.
+ *
+ * Menu difilter berdasarkan allowedActions milik role yang login:
+ * sebuah item hanya tampil bila role memiliki action yang dipersyaratkan item tsb.
+ * Section yang seluruh item-nya tersembunyi tidak akan dirender.
  */
 var SidebarComponent = (function () {
 
@@ -21,43 +25,50 @@ var SidebarComponent = (function () {
         "rumusan": '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>',
         "nilai": '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"/></svg>',
         "report": '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd"/></svg>',
-        "log-peninjauan": '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>',
+        "agenda": '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>',
+        "user-management": '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>',
         "dashboard": '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>',
     };
 
     var MENU_STRUCTURE = [
         {
+            section: "MAHASISWA",
+            items: [
+                { key: "mahasiswa-report", label: "Laporan Saya", action: "view_report_self", icon: "report" },
+            ],
+        },
+        {
             section: "PLAN",
             items: [
-                { key: "identitas-prodi",    label: "Identitas Prodi",            action: "view_all" },
-                { key: "master-pl",          label: "Profil Lulusan",             action: "view_all" },
-                { key: "master-cpl",         label: "CPL Prodi",                  action: "view_all" },
-                { key: "master-bk",          label: "Bahan Kajian",               action: "view_all" },
-                { key: "master-mk",          label: "Mata Kuliah",                action: "view_all" },
-                { key: "master-cpmk",        label: "CPMK",                       action: "view_all" },
+                { key: "identitas-prodi",    label: "Identitas Prodi",            action: "view_kurikulum" },
+                { key: "master-pl",          label: "Profil Lulusan",             action: "view_kurikulum" },
+                { key: "master-cpl",         label: "CPL Prodi",                  action: "view_kurikulum" },
+                { key: "master-bk",          label: "Bahan Kajian",               action: "view_kurikulum" },
+                { key: "master-mk",          label: "Mata Kuliah",                action: "view_kurikulum" },
+                { key: "master-cpmk",        label: "CPMK",                       action: "view_kurikulum" },
             ],
         },
         {
             section: "DO",
             items: [
-                { key: "matrix-cpl-pl",    label: "Matriks CPL - PL",           action: "view_all",   icon: "matrix" },
-                { key: "matrix-cpl-bk",    label: "Matriks CPL - BK",           action: "view_all",   icon: "matrix" },
-                { key: "matrix-bk-mk",     label: "Matriks BK - MK",            action: "view_all",   icon: "matrix" },
-                { key: "matrix-cpl-mk",    label: "Matriks CPL - MK",            action: "view_all",   icon: "matrix" },
-                { key: "matrix-cpmk-mk",   label: "Matriks CPMK - MK",           action: "view_all",   icon: "matrix" },
-                { key: "pemetaan-cpl-bk-mk", label: "Pemetaan CPL-BK-MK",       action: "view_all" },
-                { key: "organisasi-mk",    label: "Organisasi MK",              action: "view_all" },
-                { key: "peta-cpl",         label: "Peta Pemenuhan CPL",         action: "view_all" },
-                { key: "mk-subcpmk",       label: "MK - CPMK - Sub CPMK",      action: "view_all" },
-                { key: "rps",              label: "RPS",                        action: "view_all" },
+                { key: "matrix-cpl-pl",    label: "Matriks CPL - PL",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpl-bk",    label: "Matriks CPL - BK",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-bk-mk",     label: "Matriks BK - MK",            action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpl-mk",    label: "Matriks CPL - MK",            action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpmk-mk",   label: "Matriks CPMK - MK",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "pemetaan-cpl-bk-mk", label: "Pemetaan CPL-BK-MK",       action: "view_kurikulum" },
+                { key: "organisasi-mk",    label: "Organisasi MK",              action: "view_kurikulum" },
+                { key: "peta-cpl",         label: "Peta Pemenuhan CPL",         action: "view_kurikulum" },
+                { key: "mk-subcpmk",       label: "MK - CPMK - Sub CPMK",      action: "view_kurikulum" },
+                { key: "rps",              label: "RPS",                        action: "view_kurikulum" },
             ],
         },
         {
             section: "CHECK",
             items: [
-                { key: "penilaian",  label: "Penilaian dan Bobot",  action: "view_all" },
-                { key: "rumusan-mk", label: "Rumusan Akhir MK",    action: "view_all",  icon: "rumusan" },
-                { key: "rumusan-cpl",label: "Rumusan Akhir CPL",   action: "view_all",  icon: "rumusan" },
+                { key: "penilaian",  label: "Penilaian dan Bobot",  action: "view_kurikulum" },
+                { key: "rumusan-mk", label: "Rumusan Akhir MK",    action: "view_kurikulum",  icon: "rumusan" },
+                { key: "rumusan-cpl",label: "Rumusan Akhir CPL",   action: "view_kurikulum",  icon: "rumusan" },
                 { key: "nilai",      label: "Input Nilai",          action: "input_nilai" },
                 { key: "report",     label: "Laporan CPL",          action: "view_report" },
             ],
@@ -65,21 +76,45 @@ var SidebarComponent = (function () {
         {
             section: "ACTION",
             items: [
-                { key: "log-peninjauan", label: "Log Peninjauan",     action: "view_all" },
+                { key: "agenda", label: "Agenda & Dokumen Mutu", action: "view_dokumen", icon: "agenda" },
+            ],
+        },
+        {
+            section: "ADMINISTRASI",
+            items: [
+                { key: "user-management", label: "Manajemen Pengguna", action: "manage_users", icon: "user-management" },
             ],
         },
     ];
 
-    function init(role) {
+    function _allows(allowedActions, action) {
+        if (!action) return true;
+        if (!allowedActions) return false;
+        return allowedActions.indexOf(action) !== -1;
+    }
+
+    function init(role, allowedActions) {
         var container = document.getElementById("sidebar-menu");
         container.innerHTML = "";
 
-        var dashItem = _createItem({ key: "dashboard", label: "Dashboard", action: "view_all" });
-        dashItem.style.marginBottom = "4px";
-        container.appendChild(dashItem);
+        // Dashboard hanya untuk yang bisa melihat kurikulum (staf).
+        if (_allows(allowedActions, "view_kurikulum")) {
+            var dashItem = _createItem({ key: "dashboard", label: "Dashboard", action: "view_kurikulum" });
+            dashItem.style.marginBottom = "4px";
+            container.appendChild(dashItem);
+        }
 
         for (var s = 0; s < MENU_STRUCTURE.length; s++) {
             var section = MENU_STRUCTURE[s];
+
+            var visibleItems = [];
+            for (var i = 0; i < section.items.length; i++) {
+                if (_allows(allowedActions, section.items[i].action)) {
+                    visibleItems.push(section.items[i]);
+                }
+            }
+            if (visibleItems.length === 0) continue;
+
             var sectionTitle = document.createElement("div");
             sectionTitle.className = "sidebar-section-title";
             sectionTitle.textContent = section.section;
@@ -87,12 +122,9 @@ var SidebarComponent = (function () {
 
             var sectionDiv = document.createElement("div");
             sectionDiv.className = "sidebar-section";
-
-            for (var i = 0; i < section.items.length; i++) {
-                var item = section.items[i];
-                sectionDiv.appendChild(_createItem(item));
+            for (var j = 0; j < visibleItems.length; j++) {
+                sectionDiv.appendChild(_createItem(visibleItems[j]));
             }
-
             container.appendChild(sectionDiv);
         }
     }

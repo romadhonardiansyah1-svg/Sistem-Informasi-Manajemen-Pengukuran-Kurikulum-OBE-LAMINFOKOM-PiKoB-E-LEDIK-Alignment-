@@ -75,110 +75,75 @@ def _register_page_routes(app):
 
     @app.route("/api/db-status")
     def db_status():
+        """
+        Endpoint diagnostik. Status koneksi dasar bersifat publik, namun
+        DETAIL SENSITIF (daftar user) dan AKSI BERBAHAYA (reset password / init DB)
+        hanya tersedia bila ?token= cocok dengan env DB_ADMIN_TOKEN.
+        password_hash tidak pernah dikembalikan.
+        """
         import config
         import state
+        from flask import request
         from sqlalchemy import inspect
-        
+
+        token = request.args.get("token", "")
+        authorized = bool(config.DB_ADMIN_TOKEN) and token == config.DB_ADMIN_TOKEN
+
         status = {
             "db_mode": config.DB_MODE,
-            "database_uri_masked": "",
             "connection_ok": False,
             "error": None,
-            "tables": []
         }
-        
-        uri = config.DATABASE_URI or ""
-        if "@" in uri:
-            try:
-                parts = uri.split("@")
-                prefix = parts[0]
-                scheme = "postgresql" if "postgresql" in prefix else "mysql" if "mysql" in prefix else "db"
-                status["database_uri_masked"] = f"{scheme}://***:***@{parts[1]}"
-            except Exception:
-                status["database_uri_masked"] = "invalid_uri_format"
-        else:
-            status["database_uri_masked"] = uri
-            
+
         try:
             conn = state.engine.connect()
-            inspector = inspect(state.engine)
-            status["tables"] = inspector.get_table_names()
+            tables = inspect(state.engine).get_table_names()
             status["connection_ok"] = True
-            
-            if "users" in status["tables"]:
-                from models.user import User
-                admin = state.db.query(User).filter_by(username="admin").first()
-                status["admin_user_exists"] = admin is not None
+            status["tables_count"] = len(tables)
+            conn.close()
+
+            if token and not authorized:
+                status["error"] = "Token tidak valid."
+                return status
+
+            if not authorized:
+                # Mode publik: jangan bocorkan struktur/data.
+                return status
+
+            # --- Mulai area khusus admin ber-token ---
+            from models.user import User
+            status["tables"] = tables
+            if "users" in tables:
                 status["users_count"] = state.db.query(User).count()
-                if admin:
-                    status["admin_password_hash_empty"] = not bool(admin.password_hash)
-                
-                # Tambahkan list user untuk debugging
-                users = state.db.query(User).all()
                 status["users_list"] = [
-                    {
-                        "username": u.username,
-                        "password_hash": u.password_hash,
-                        "role": u.role
-                    }
-                    for u in users
+                    {"username": u.username, "role": u.role, "nama": u.nama}
+                    for u in state.db.query(User).all()
                 ]
 
-                # Reset password jika ada query param ?reset=1
-                from flask import request
-                query_args = request.args
-                if query_args.get("reset") == "1":
-                    from services.auth_service import hash_password
-                    if admin:
-                        admin.password_hash = hash_password("admin123")
-                        state.db.add(admin)
-                        state.db.commit()
-                        status["reset_status"] = "Sukses mereset password admin ke admin123"
-                        # Update status list agar langsung sinkron
-                        for user_item in status["users_list"]:
-                            if user_item["username"] == "admin":
-                                user_item["password_hash"] = admin.password_hash
-                    else:
-                        status["reset_status"] = "User admin tidak ditemukan"
+            if request.args.get("reset") == "1":
+                from services.auth_service import hash_password
+                admin = state.db.query(User).filter_by(username="admin").first()
+                if admin:
+                    admin.password_hash = hash_password("admin123")
+                    state.db.add(admin)
+                    state.db.commit()
+                    status["reset_status"] = "Password admin direset ke admin123"
+                else:
+                    status["reset_status"] = "User admin tidak ditemukan"
 
-                # Inisialisasi ulang database jika ada query param ?init=1
-                if query_args.get("init") == "1":
-                    # 1. Jalankan create_all() untuk membuat semua tabel
-                    create_all()
-                    
-                    # 2. Jalankan seed_all() untuk mengisi data awal + user admin
-                    seed_all()
-                    
-                    status["init_status"] = "Sukses membuat ulang seluruh tabel dan mengisi data awal (seeding)"
-                    
-                    # Ambil ulang data tables dan users setelah inisialisasi
-                    from sqlalchemy import inspect
-                    inspector = inspect(state.engine)
-                    status["tables"] = inspector.get_table_names()
-                    if "users" in status["tables"]:
-                        admin = state.db.query(User).filter_by(username="admin").first()
-                        status["admin_user_exists"] = admin is not None
-                        status["users_count"] = state.db.query(User).count()
-                        users = state.db.query(User).all()
-                        status["users_list"] = [
-                            {
-                                "username": u.username,
-                                "password_hash": u.password_hash,
-                                "role": u.role
-                            }
-                            for u in users
-                        ]
-                    else:
-                        status["init_status"] = "Gagal membuat tabel 'users'"
-            
-            conn.close()
+            if request.args.get("init") == "1":
+                create_all()
+                seed_all()
+                status["init_status"] = "Tabel dibuat ulang & data awal diisi (seeding)"
+                status["tables"] = inspect(state.engine).get_table_names()
+
         except Exception as e:
             status["error"] = str(e)
             try:
                 state.db.rollback()
             except Exception:
                 pass
-            
+
         return status
 
 
@@ -202,6 +167,7 @@ def seed_all():
     from db.seed_cpmk import seed_cpmk
     from db.seed_cpmk_mk import seed_cpmk_mk_matrix, seed_cpl_mk_matrix
     from db.seed_rps import seed_rps, seed_mahasiswa
+    from db.seed_penilaian import seed_tahap_penilaian, seed_nilai_demo
 
     session = state.db
 
@@ -223,7 +189,13 @@ def seed_all():
             session.rollback()
             print(f"Gagal membuat user admin: {e}")
 
-    # Data kurikulum
+    # Data kurikulum (idempotent: lewati bila kurikulum sudah ada agar
+    # ?init=1 yang diulang tidak menduplikasi data).
+    from models.institution import ProgramStudi
+    if session.query(ProgramStudi).first() is not None:
+        print("Data kurikulum sudah ada -> seeding kurikulum dilewati.")
+        return
+
     try:
         prodi_id = seed_institution()
         periode_id = seed_periode(prodi_id)
@@ -240,12 +212,16 @@ def seed_all():
         seed_cpl_mk_matrix()
         seed_cpmk_mk_matrix()
 
-        # RPS dan Mahasiswa
+        # RPS dan Mahasiswa (+ akun login mahasiswa)
         seed_rps(periode_id)
         seed_mahasiswa(prodi_id)
 
+        # Data demo penilaian + nilai agar laporan CPL bernilai nyata (bukan 0)
+        seed_tahap_penilaian()
+        seed_nilai_demo()
+
         session.commit()
-        print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, 5 matriks, 3 RPS, 5 mahasiswa.")
+        print("Seed data selesai: 5 PL, 14 CPL, 21 BK, 66 MK, 33 CPMK, matriks, RPS, 5 mahasiswa + akun, tahap penilaian & nilai demo.")
     except Exception as e:
         session.rollback()
         print(f"Seeding kurikulum dilewati atau gagal (kemungkinan data sudah ada): {e}")

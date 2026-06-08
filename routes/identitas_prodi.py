@@ -72,6 +72,6 @@ def update_identitas_prodi():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/identitas-prodi", get_identitas_prodi, "view_all"),
+    ("GET", "/api/identitas-prodi", get_identitas_prodi, "view_kurikulum"),
     ("PUT", "/api/identitas-prodi", update_identitas_prodi, "manage_prodi"),
 ]
