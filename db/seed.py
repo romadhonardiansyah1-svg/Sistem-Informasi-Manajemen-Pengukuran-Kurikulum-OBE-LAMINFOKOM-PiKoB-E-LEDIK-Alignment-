@@ -38,7 +38,12 @@ def seed_institution():
 
 
 def seed_periode(prodi_id):
-    """Membuat periode kurikulum default."""
+    """
+    Membuat periode kurikulum (5 tahunan).
+    Periode aktif 2024-2028 + satu periode berikutnya 2029-2033 (draft)
+    agar pemisahan dokumen antar-generasi & dropdown periode dapat diuji.
+    Mengembalikan id periode aktif.
+    """
     session = state.db
     periode = PeriodeKurikulum(
         prodi_id=prodi_id,
@@ -49,6 +54,17 @@ def seed_periode(prodi_id):
     )
     session.add(periode)
     session.flush()
+
+    periode_berikutnya = PeriodeKurikulum(
+        prodi_id=prodi_id,
+        nama="Kurikulum 2029-2033",
+        tahun_mulai=2029,
+        tahun_selesai=2033,
+        status="draft",
+    )
+    session.add(periode_berikutnya)
+    session.flush()
+
     return periode.id
 
 

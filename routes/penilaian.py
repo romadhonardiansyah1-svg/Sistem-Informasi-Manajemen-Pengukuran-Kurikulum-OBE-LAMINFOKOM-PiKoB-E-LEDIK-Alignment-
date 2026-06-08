@@ -104,10 +104,10 @@ def save_bobot_penilaian():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/penilaian/teknik", list_teknik_penilaian, "view_all"),
+    ("GET", "/api/penilaian/teknik", list_teknik_penilaian, "view_kurikulum"),
     ("POST", "/api/penilaian/teknik", save_teknik_penilaian, "manage_penilaian"),
-    ("GET", "/api/penilaian/tahap", list_tahap_penilaian, "view_all"),
+    ("GET", "/api/penilaian/tahap", list_tahap_penilaian, "view_kurikulum"),
     ("POST", "/api/penilaian/tahap", save_tahap_penilaian, "manage_penilaian"),
-    ("GET", "/api/penilaian/bobot", list_bobot_penilaian, "view_all"),
+    ("GET", "/api/penilaian/bobot", list_bobot_penilaian, "view_kurikulum"),
     ("POST", "/api/penilaian/bobot", save_bobot_penilaian, "manage_bobot"),
 ]

@@ -75,5 +75,5 @@ def get_pemetaan_mk_subcpmk():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/pemetaan-mk-subcpmk", get_pemetaan_mk_subcpmk, "view_all"),
+    ("GET", "/api/pemetaan-mk-subcpmk", get_pemetaan_mk_subcpmk, "view_kurikulum"),
 ]

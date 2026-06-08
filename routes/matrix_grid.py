@@ -115,6 +115,6 @@ def toggle_cell(matrix_type):
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/matrix/<matrix_type>", get_matrix, "view_all"),
+    ("GET", "/api/matrix/<matrix_type>", get_matrix, "view_kurikulum"),
     ("POST", "/api/matrix/<matrix_type>/toggle", toggle_cell, "manage_matrix"),
 ]

@@ -17,5 +17,5 @@ def get_dashboard():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/dashboard", get_dashboard, "view_all"),
+    ("GET", "/api/dashboard", get_dashboard, "view_kurikulum"),
 ]

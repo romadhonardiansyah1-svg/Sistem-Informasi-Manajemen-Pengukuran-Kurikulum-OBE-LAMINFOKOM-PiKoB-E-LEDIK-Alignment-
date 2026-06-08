@@ -81,7 +81,7 @@ def delete_pl(record_id):
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/pl", list_pl, "view_all"),
+    ("GET", "/api/pl", list_pl, "view_kurikulum"),
     ("POST", "/api/pl", create_pl, "manage_master"),
     ("PUT", "/api/pl/<int:record_id>", update_pl, "manage_master"),
     ("DELETE", "/api/pl/<int:record_id>", delete_pl, "manage_master"),

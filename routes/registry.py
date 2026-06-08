@@ -36,6 +36,7 @@ def register_routes(app):
     from routes import rumusan
     from routes import identitas_prodi
     from routes import log_peninjauan
+    from routes import users as users_routes
 
     modules = [
         auth_routes,
@@ -60,6 +61,7 @@ def register_routes(app):
         rumusan,
         identitas_prodi,
         log_peninjauan,
+        users_routes,
     ]
 
     for module in modules:

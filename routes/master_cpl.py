@@ -119,10 +119,10 @@ def create_cpl_sndikti():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/cpl-prodi", list_cpl_prodi, "view_all"),
+    ("GET", "/api/cpl-prodi", list_cpl_prodi, "view_kurikulum"),
     ("POST", "/api/cpl-prodi", create_cpl_prodi, "manage_master"),
     ("PUT", "/api/cpl-prodi/<int:record_id>", update_cpl_prodi, "manage_master"),
     ("DELETE", "/api/cpl-prodi/<int:record_id>", delete_cpl_prodi, "manage_master"),
-    ("GET", "/api/cpl-sndikti", list_cpl_sndikti, "view_all"),
+    ("GET", "/api/cpl-sndikti", list_cpl_sndikti, "view_kurikulum"),
     ("POST", "/api/cpl-sndikti", create_cpl_sndikti, "manage_master"),
 ]

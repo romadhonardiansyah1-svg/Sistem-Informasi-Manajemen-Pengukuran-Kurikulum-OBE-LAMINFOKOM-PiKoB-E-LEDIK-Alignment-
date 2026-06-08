@@ -121,10 +121,10 @@ def create_sub_cpmk():
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/cpmk", list_cpmk, "view_all"),
+    ("GET", "/api/cpmk", list_cpmk, "view_kurikulum"),
     ("POST", "/api/cpmk", create_cpmk, "manage_master"),
     ("PUT", "/api/cpmk/<int:record_id>", update_cpmk, "manage_master"),
     ("DELETE", "/api/cpmk/<int:record_id>", delete_cpmk, "manage_master"),
-    ("GET", "/api/sub-cpmk", list_sub_cpmk, "view_all"),
+    ("GET", "/api/sub-cpmk", list_sub_cpmk, "view_kurikulum"),
     ("POST", "/api/sub-cpmk", create_sub_cpmk, "manage_master"),
 ]

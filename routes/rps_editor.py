@@ -95,8 +95,8 @@ def update_rps_minggu(record_id):
 
 
 ROUTE_DEFINITIONS = [
-    ("GET", "/api/rps", list_rps, "view_all"),
-    ("GET", "/api/rps/<int:record_id>", get_rps, "view_all"),
+    ("GET", "/api/rps", list_rps, "view_kurikulum"),
+    ("GET", "/api/rps/<int:record_id>", get_rps, "view_kurikulum"),
     ("POST", "/api/rps", create_rps, "manage_rps"),
     ("PUT", "/api/rps/<int:record_id>/minggu", update_rps_minggu, "manage_rps"),
 ]

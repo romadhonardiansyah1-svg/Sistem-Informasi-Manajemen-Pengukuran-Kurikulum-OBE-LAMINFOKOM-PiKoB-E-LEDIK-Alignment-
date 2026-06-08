@@ -2,6 +2,7 @@
 Agregasi data untuk laporan CPL.
 """
 
+import config
 import state
 from models.cpl import CPLProdi
 from models.user import Mahasiswa
@@ -12,20 +13,40 @@ from services.kalkulasi_formulas import resolve_grade, pemenuhan_threshold
 def get_cpl_report_mahasiswa(mahasiswa_id):
     """
     Laporan CPL untuk satu mahasiswa.
-    Return: skor per CPL + grade + spider chart data.
+    Return: skor per CPL + grade + spider chart data + ringkasan ketercapaian.
     """
     result = hitung_seluruh_mahasiswa(mahasiswa_id)
 
-    spider_data = []
-    for cpl_score in result["cpl_scores"]:
-        spider_data.append({
-            "label": cpl_score["cpl_kode"],
-            "value": cpl_score["skor_normalized"],
-            "grade": cpl_score["grade"],
-            "lulus": pemenuhan_threshold(cpl_score["skor_normalized"]),
-        })
+    cpl_map = {c.id: c for c in state.db.query(CPLProdi).all()}
 
+    spider_data = []
+    total = 0.0
+    lulus = 0
+    for cpl_score in result["cpl_scores"]:
+        cpl = cpl_map.get(cpl_score["cpl_id"])
+        nilai = cpl_score["skor_normalized"]
+        is_lulus = pemenuhan_threshold(nilai)
+        spider_data.append({
+            "cpl_id": cpl_score["cpl_id"],
+            "label": cpl_score["cpl_kode"],
+            "deskripsi": cpl.deskripsi if cpl else "",
+            "value": nilai,
+            "grade": cpl_score["grade"],
+            "lulus": is_lulus,
+        })
+        total += nilai
+        if is_lulus:
+            lulus += 1
+
+    n = len(spider_data)
     result["spider_chart"] = spider_data
+    result["ringkasan"] = {
+        "rata_rata": round(total / n, 2) if n else 0,
+        "jumlah_cpl": n,
+        "jumlah_lulus": lulus,
+        "persen_lulus": round(lulus / n * 100, 2) if n else 0,
+        "threshold": config.SKOR_PEMENUHAN_CPL_MINIMAL,
+    }
     return result
 
 
