@@ -79,9 +79,21 @@ def lock_periode(record_id):
     return success(message="Periode dikunci")
 
 
+def unlock_periode(record_id):
+    """POST /api/periode/<id>/unlock"""
+    periode = state.db.query(PeriodeKurikulum).get(record_id)
+    if periode is None:
+        return not_found()
+
+    periode.locked = False
+    state.db.commit()
+    return success(message="Periode dibuka kuncinya")
+
+
 ROUTE_DEFINITIONS = [
     ("GET", "/api/periode", list_periode, "view_kurikulum"),
     ("POST", "/api/periode", create_periode, "manage_periode"),
     ("PUT", "/api/periode/<int:record_id>", update_periode, "manage_periode"),
     ("POST", "/api/periode/<int:record_id>/lock", lock_periode, "lock_periode"),
+    ("POST", "/api/periode/<int:record_id>/unlock", unlock_periode, "lock_periode"),
 ]

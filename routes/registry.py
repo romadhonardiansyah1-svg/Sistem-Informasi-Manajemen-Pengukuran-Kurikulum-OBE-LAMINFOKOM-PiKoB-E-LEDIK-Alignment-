@@ -37,6 +37,7 @@ def register_routes(app):
     from routes import identitas_prodi
     from routes import log_peninjauan
     from routes import users as users_routes
+    from routes import master_dropdown
 
     modules = [
         auth_routes,
@@ -62,6 +63,7 @@ def register_routes(app):
         identitas_prodi,
         log_peninjauan,
         users_routes,
+        master_dropdown,
     ]
 
     for module in modules:

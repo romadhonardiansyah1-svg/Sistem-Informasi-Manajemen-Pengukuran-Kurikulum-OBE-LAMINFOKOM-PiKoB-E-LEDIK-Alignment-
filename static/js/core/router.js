@@ -31,6 +31,7 @@ var Router = (function () {
         "agenda":           { loader: "AgendaPage",     title: "Agenda & Dokumen Mutu" },
         "log-peninjauan":   { loader: "AgendaPage",     title: "Agenda & Dokumen Mutu" },
         "user-management":  { loader: "UserManagementPage", title: "Manajemen Pengguna" },
+        "referensi":        { loader: "ReferensiPage",     title: "Referensi Sumber Data" },
     };
 
     function navigateTo(pageKey) {

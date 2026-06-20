@@ -1,11 +1,12 @@
 """
 Decorator otorisasi berbasis role.
-Menggunakan permission.py dispatch table, bukan if-else.
+Bila config.OPEN_ACCESS True, cukup butuh login (semua action diizinkan).
 """
 
 from functools import wraps
 from flask import jsonify
 
+import config
 import state
 from services.permission import check_permission
 
@@ -27,8 +28,11 @@ def require_action(action):
             if user is None:
                 return jsonify({"error": "Autentikasi diperlukan"}), 401
 
-            has_access = check_permission(user.role, action)
-            if not has_access:
+            # MODE OPEN ACCESS: semua user login boleh akses semua fitur.
+            if getattr(config, "OPEN_ACCESS", False):
+                return handler(*args, **kwargs)
+
+            if not check_permission(user.role, action):
                 return jsonify({
                     "error": "Akses ditolak",
                     "required_action": action,

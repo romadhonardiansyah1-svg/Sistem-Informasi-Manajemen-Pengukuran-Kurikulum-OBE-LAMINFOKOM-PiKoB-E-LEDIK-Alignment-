@@ -35,6 +35,7 @@ var FormBuilder = (function () {
             "number":   _createNumberInput,
             "textarea": _createTextarea,
             "select":   _createSelect,
+            "remote-select": _createRemoteSelect,
         };
 
         var creator = INPUT_CREATORS[field.type] || _createTextInput;
@@ -86,6 +87,41 @@ var FormBuilder = (function () {
             }
             select.appendChild(opt);
         }
+        return select;
+    }
+
+    function _createRemoteSelect(field, value) {
+        var select = document.createElement("select");
+        select.className = "form-select";
+        select.id = "field-" + field.key;
+        select.name = field.key;
+
+        // Opsi default
+        var defOpt = document.createElement("option");
+        defOpt.value = "";
+        defOpt.textContent = "-- Pilih " + field.label + " --";
+        select.appendChild(defOpt);
+
+        // Load opsi dari endpoint API
+        Api.get(field.endpoint).then(function (res) {
+            var items = res.data || [];
+            var vKey = field.valueKey || "nama";
+            for (var i = 0; i < items.length; i++) {
+                var opt = document.createElement("option");
+                opt.value = items[i][vKey];
+                opt.textContent = items[i][vKey];
+                if (value && items[i][vKey] === value) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            }
+        });
+
+        // Atur nilai awal jika sudah ada
+        if (value) {
+            select.value = value;
+        }
+
         return select;
     }
 

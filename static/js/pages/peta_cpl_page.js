@@ -1,6 +1,7 @@
 /**
  * Halaman Peta Pemenuhan CPL (Tabel 11 Buku Panduan APTIKOM).
- * Matriks CPL x Semester, menunjukkan jumlah MK per sel.
+ * Matriks CPL x Semester, menunjukkan daftar MK + SKS per sel.
+ * Data diturunkan OTOMATIS dari relasi CPL-MK + semester.
  */
 var PetaCplPage = (function () {
 
@@ -9,7 +10,7 @@ var PetaCplPage = (function () {
         content.innerHTML =
             '<div class="page-header">' +
             '  <h2 class="page-title">' + entry.title + '</h2>' +
-            '  <p class="page-desc">Distribusi CPL per semester berdasarkan jumlah MK</p>' +
+            '  <p class="page-desc">Distribusi CPL per semester — data otomatis dari relasi CPL-MK</p>' +
             '</div>' +
             '<div id="peta-cpl-container"></div>';
 
@@ -30,21 +31,41 @@ var PetaCplPage = (function () {
         for (var i = 0; i < semesters.length; i++) {
             html += '<th class="cell-center">Sem ' + semesters[i] + '</th>';
         }
-        html += '<th class="cell-center">Total</th>';
+        html += '<th class="cell-center">Total MK</th>';
+        html += '<th class="cell-center">Total SKS</th>';
         html += '</tr></thead><tbody>';
 
         for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
             html += '<tr>';
             html += '<td class="sticky-col cell-code" title="' + DomUtils.escape(row.deskripsi) + '">' + DomUtils.escape(row.kode) + '</td>';
-            var total = 0;
+            var totalMK = 0;
+            var totalSKS = 0;
             for (var k = 0; k < semesters.length; k++) {
-                var count = row.semesters[String(semesters[k])] || 0;
-                total += count;
+                var semData = row.semesters[String(semesters[k])];
+                var count = 0;
+                var sks = 0;
+                var tooltipText = "";
+                if (semData && typeof semData === "object") {
+                    count = semData.count || 0;
+                    sks = semData.sks || 0;
+                    var mkList = semData.mk_list || [];
+                    var parts = [];
+                    for (var m = 0; m < mkList.length; m++) {
+                        parts.push(mkList[m].kode + " (" + mkList[m].sks + " SKS)");
+                    }
+                    tooltipText = parts.join(", ");
+                } else if (typeof semData === "number") {
+                    count = semData;
+                }
+                totalMK += count;
+                totalSKS += sks;
                 var cellClass = count > 0 ? "cell-active" : "cell-empty";
-                html += '<td class="cell-center ' + cellClass + '">' + (count > 0 ? count : "-") + '</td>';
+                var cellContent = count > 0 ? count + " MK<br>" + sks + " SKS" : "-";
+                html += '<td class="cell-center ' + cellClass + '" title="' + DomUtils.escape(tooltipText) + '">' + cellContent + '</td>';
             }
-            html += '<td class="cell-center cell-total">' + total + '</td>';
+            html += '<td class="cell-center cell-total">' + totalMK + '</td>';
+            html += '<td class="cell-center cell-total">' + totalSKS + '</td>';
             html += '</tr>';
         }
 

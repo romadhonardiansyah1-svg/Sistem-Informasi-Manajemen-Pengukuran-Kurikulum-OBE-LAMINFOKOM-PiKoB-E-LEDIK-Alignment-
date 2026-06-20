@@ -133,6 +133,7 @@ var RPSPage = (function () {
                 html += '</tr>';
             }
             html += '</tbody></table>';
+            html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-sm btn-outline" id="btn-print-rps">🖨️ Cetak / Print</button></div>';
         }
 
         container.innerHTML = html;
@@ -141,6 +142,13 @@ var RPSPage = (function () {
         if (genBtn) {
             genBtn.addEventListener("click", function () {
                 _generateMinggu(r.id);
+            });
+        }
+
+        var printBtn = document.getElementById("btn-print-rps");
+        if (printBtn) {
+            printBtn.addEventListener("click", function () {
+                window.print();
             });
         }
     }

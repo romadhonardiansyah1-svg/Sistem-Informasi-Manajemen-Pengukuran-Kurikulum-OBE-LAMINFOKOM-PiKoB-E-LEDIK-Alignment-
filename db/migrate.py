@@ -19,6 +19,14 @@ _NEW_COLUMNS = [
     ("dokumen_bukti", "storage_key", "VARCHAR(500) DEFAULT ''"),
     ("dokumen_bukti", "storage_backend", "VARCHAR(20) DEFAULT 'local'"),
     ("mahasiswa", "user_id", "INTEGER"),
+    ("cpl_prodi", "referensi", "TEXT"),
+    ("cpl_sn_dikti", "referensi", "TEXT"),
+    ("bahan_kajian", "referensi", "TEXT"),
+    ("rps", "bobot_teori_sks", "INTEGER DEFAULT 0"),
+    ("rps", "bobot_praktikum_sks", "INTEGER DEFAULT 0"),
+    ("rps", "media_software", "TEXT"),
+    ("rps", "media_hardware", "TEXT"),
+    ("rps", "mk_prasyarat", "TEXT"),
 ]
 
 
@@ -87,3 +95,4 @@ def _import_all_models():
     import models.nilai
     import models.rps
     import models.log_peninjauan
+    import models.master_dropdown

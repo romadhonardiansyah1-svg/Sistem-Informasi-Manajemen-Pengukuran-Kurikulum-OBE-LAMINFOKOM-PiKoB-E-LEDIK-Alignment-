@@ -40,6 +40,11 @@ var TableComponent = (function () {
                 var td = document.createElement("td");
                 var key = columns[c2].key;
                 td.textContent = row[key] !== undefined ? row[key] : "";
+                // Tooltip (hover): tampilkan data dari field lain saat hover pada kolom ini
+                if (columns[c2].tooltip && row[columns[c2].tooltip]) {
+                    td.title = columns[c2].tooltip + ": " + row[columns[c2].tooltip];
+                    td.style.cursor = "help";
+                }
                 tr.appendChild(td);
             }
 

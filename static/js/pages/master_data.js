@@ -6,17 +6,17 @@ var MasterDataPage = (function () {
 
     var COLUMN_MAP = {
         "pl":   [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }, { key: "kategori", label: "Kategori" }],
-        "cpl":  [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }],
-        "bk":   [{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "kompetensi", label: "Kompetensi" }],
+        "cpl":  [{ key: "kode", label: "Kode", tooltip: "referensi" }, { key: "deskripsi", label: "Deskripsi" }, { key: "referensi", label: "Referensi" }],
+        "bk":   [{ key: "kode", label: "Kode", tooltip: "referensi" }, { key: "nama", label: "Nama" }, { key: "kompetensi", label: "Kompetensi" }, { key: "referensi", label: "Referensi" }],
         "mk":   [{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "sks", label: "SKS" }, { key: "semester", label: "Semester" }, { key: "jenis", label: "Jenis" }],
         "cpmk": [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }],
     };
 
     var FORM_FIELDS_MAP = {
-        "pl":   [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }, { key: "kategori", label: "Kategori", type: "text" }],
-        "cpl":  [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }],
-        "bk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "kompetensi", label: "Kompetensi", type: "text" }],
-        "mk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "sks", label: "SKS", type: "number" }, { key: "semester", label: "Semester", type: "number" }, { key: "jenis", label: "Jenis", type: "text" }],
+        "pl":   [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }, { key: "kategori", label: "Kategori", type: "remote-select", endpoint: "/api/kategori-pl", valueKey: "nama", fallback: "text" }],
+        "cpl":  [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }, { key: "referensi", label: "Referensi / Standar", type: "text" }],
+        "bk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "kompetensi", label: "Kompetensi", type: "text" }, { key: "referensi", label: "Referensi", type: "text" }],
+        "mk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "sks", label: "SKS", type: "number" }, { key: "semester", label: "Semester", type: "number" }, { key: "jenis", label: "Jenis", type: "remote-select", endpoint: "/api/jenis-mk", valueKey: "nama", fallback: "text" }],
         "cpmk": [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }],
     };
 

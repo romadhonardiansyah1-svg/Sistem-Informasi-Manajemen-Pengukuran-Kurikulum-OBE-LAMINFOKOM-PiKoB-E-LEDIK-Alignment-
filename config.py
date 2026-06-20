@@ -207,6 +207,10 @@ JENIS_AGENDA_LABELS = {
 
 PERIODE_DURATION_YEARS = 5
 
+# Akses terbuka: bila True, SEMUA user terautentikasi bisa akses SEMUA fitur.
+# Role tetap disimpan di DB untuk pembatasan di masa depan.
+OPEN_ACCESS = os.environ.get("OPEN_ACCESS", "true").lower() == "true"
+
 
 # -- Penilaian --
 

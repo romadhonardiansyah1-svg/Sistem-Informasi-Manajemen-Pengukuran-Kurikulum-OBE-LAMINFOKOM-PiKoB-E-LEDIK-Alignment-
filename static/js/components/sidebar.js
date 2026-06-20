@@ -46,20 +46,20 @@ var SidebarComponent = (function () {
                 { key: "master-bk",          label: "Bahan Kajian",               action: "view_kurikulum" },
                 { key: "master-mk",          label: "Mata Kuliah",                action: "view_kurikulum" },
                 { key: "master-cpmk",        label: "CPMK",                       action: "view_kurikulum" },
+                { key: "matrix-cpl-pl",      label: "Matriks CPL - PL",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpl-bk",      label: "Matriks CPL - BK",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-bk-mk",       label: "Matriks BK - MK",            action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpl-mk",      label: "Matriks CPL - MK",            action: "view_kurikulum",   icon: "matrix" },
+                { key: "matrix-cpmk-mk",     label: "Matriks CPMK - MK",           action: "view_kurikulum",   icon: "matrix" },
+                { key: "pemetaan-cpl-bk-mk", label: "Pemetaan CPL-BK-MK",        action: "view_kurikulum" },
+                { key: "organisasi-mk",      label: "Organisasi MK",              action: "view_kurikulum" },
+                { key: "peta-cpl",           label: "Peta Pemenuhan CPL",         action: "view_kurikulum" },
+                { key: "mk-subcpmk",         label: "MK - CPMK - Sub CPMK",      action: "view_kurikulum" },
             ],
         },
         {
             section: "DO",
             items: [
-                { key: "matrix-cpl-pl",    label: "Matriks CPL - PL",           action: "view_kurikulum",   icon: "matrix" },
-                { key: "matrix-cpl-bk",    label: "Matriks CPL - BK",           action: "view_kurikulum",   icon: "matrix" },
-                { key: "matrix-bk-mk",     label: "Matriks BK - MK",            action: "view_kurikulum",   icon: "matrix" },
-                { key: "matrix-cpl-mk",    label: "Matriks CPL - MK",            action: "view_kurikulum",   icon: "matrix" },
-                { key: "matrix-cpmk-mk",   label: "Matriks CPMK - MK",           action: "view_kurikulum",   icon: "matrix" },
-                { key: "pemetaan-cpl-bk-mk", label: "Pemetaan CPL-BK-MK",       action: "view_kurikulum" },
-                { key: "organisasi-mk",    label: "Organisasi MK",              action: "view_kurikulum" },
-                { key: "peta-cpl",         label: "Peta Pemenuhan CPL",         action: "view_kurikulum" },
-                { key: "mk-subcpmk",       label: "MK - CPMK - Sub CPMK",      action: "view_kurikulum" },
                 { key: "rps",              label: "RPS",                        action: "view_kurikulum" },
             ],
         },
@@ -85,10 +85,17 @@ var SidebarComponent = (function () {
                 { key: "user-management", label: "Manajemen Pengguna", action: "manage_users", icon: "user-management" },
             ],
         },
+        {
+            section: "REFERENSI",
+            items: [
+                { key: "referensi", label: "Referensi Sumber", action: null, icon: "master-bk" },
+            ],
+        },
     ];
 
     function _allows(allowedActions, action) {
         if (!action) return true;
+        if (AppState.user && AppState.user.open_access) return true;   // OPEN ACCESS → tampilkan semua
         if (!allowedActions) return false;
         return allowedActions.indexOf(action) !== -1;
     }
@@ -97,9 +104,10 @@ var SidebarComponent = (function () {
         var container = document.getElementById("sidebar-menu");
         container.innerHTML = "";
 
-        // Dashboard hanya untuk yang bisa melihat kurikulum (staf).
-        if (_allows(allowedActions, "view_kurikulum")) {
-            var dashItem = _createItem({ key: "dashboard", label: "Dashboard", action: "view_kurikulum" });
+        // Dashboard: tampilkan untuk open access atau yang bisa view kurikulum.
+        var openAccess = AppState.user && AppState.user.open_access;
+        if (openAccess || _allows(allowedActions, "view_kurikulum")) {
+            var dashItem = _createItem({ key: "dashboard", label: "Dashboard", action: null });
             dashItem.style.marginBottom = "4px";
             container.appendChild(dashItem);
         }
@@ -162,6 +170,14 @@ var SidebarComponent = (function () {
             }
         }
     }
+
+    // Toggle sidebar collapsible
+    document.addEventListener("DOMContentLoaded", function () {
+        var t = document.getElementById("sidebar-toggle");
+        if (t) t.addEventListener("click", function () {
+            document.querySelector(".app-layout").classList.toggle("sidebar-collapsed");
+        });
+    });
 
     return { init: init };
 

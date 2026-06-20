@@ -5,7 +5,6 @@ Route autentikasi: login, logout, info session.
 from flask import request, session
 
 from services.auth_service import authenticate
-from services.permission import get_allowed_actions, get_scope
 import state
 from utils.response import success, error
 
@@ -15,12 +14,24 @@ def _build_session_payload(user_dict):
     Membentuk payload aman untuk frontend dari dict user:
     - buang password_hash (jangan pernah dikirim ke client)
     - sertakan allowed_actions + scope sesuai role (untuk filter menu di frontend)
+    - jika OPEN_ACCESS, gabungkan SEMUA action → sidebar tampilkan semua menu
     - jika role mahasiswa, sertakan mahasiswa_id/nim/angkatan agar laporan bisa self-scoped
     """
+    import config
+    from services.permission import get_allowed_actions, get_scope, ROLE_ACTIONS
+
     role = user_dict.get("role")
     payload = {k: v for k, v in user_dict.items() if k != "password_hash"}
     payload["allowed_actions"] = get_allowed_actions(role)
     payload["scope"] = get_scope(role)
+
+    # Mode akses terbuka: kirim semua action agar frontend tampilkan semua menu
+    payload["open_access"] = getattr(config, "OPEN_ACCESS", False)
+    if payload["open_access"]:
+        semua = set()
+        for r in ROLE_ACTIONS.values():
+            semua |= set(r["allowed"])
+        payload["allowed_actions"] = sorted(semua)
 
     if role == "mahasiswa":
         from models.user import Mahasiswa

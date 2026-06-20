@@ -7,9 +7,10 @@ from flask import request
 
 import state
 from models.cpl import CPLProdi, CPLSNDikti
-from utils.response import success, created, not_found
+from utils.response import success, created, not_found, error
 from utils.pagination import get_pagination_params, apply_pagination
 from middleware.validation import validate_request, validation_error_response
+from services.lock_guard import assert_periode_unlocked
 
 
 CPL_PRODI_SCHEMA = {
@@ -47,6 +48,11 @@ def create_cpl_prodi():
     if not is_valid:
         return validation_error_response(errors)
 
+    try:
+        assert_periode_unlocked(data.get("periode_id"))
+    except ValueError as e:
+        return error(str(e), status=423)
+
     cpl = CPLProdi(
         periode_id=data["periode_id"],
         kode=data["kode"],
@@ -64,6 +70,11 @@ def update_cpl_prodi(record_id):
     if cpl is None:
         return not_found()
 
+    try:
+        assert_periode_unlocked(cpl.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
+
     data = request.get_json(silent=True)
     for field in ("kode", "deskripsi", "referensi"):
         value = data.get(field)
@@ -79,6 +90,11 @@ def delete_cpl_prodi(record_id):
     cpl = state.db.query(CPLProdi).get(record_id)
     if cpl is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(cpl.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
 
     state.db.delete(cpl)
     state.db.commit()

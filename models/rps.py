@@ -22,6 +22,11 @@ class RPS(BaseModel):
     dosen_pengampu = Column(Text)
     dosen_koordinator = Column(String(200))
     tanggal_penyusunan = Column(String(20))
+    bobot_teori_sks = Column(Integer, default=0)
+    bobot_praktikum_sks = Column(Integer, default=0)
+    media_software = Column(Text)
+    media_hardware = Column(Text)
+    mk_prasyarat = Column(Text)
 
 
 class RPSMinggu(BaseModel):

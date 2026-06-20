@@ -189,6 +189,39 @@ def seed_all():
             session.rollback()
             print(f"Gagal membuat user admin: {e}")
 
+    # Akun demo per role (idempotent: lewati jika sudah ada)
+    demo = [
+        ("kaprodi", "kaprodi", "Kaprodi Demo", "kaprodi"),
+        ("timkurikulum", "timkurikulum", "Tim Kurikulum Demo", "tim_kurikulum"),
+        ("dosen", "dosen", "Dosen Demo", "dosen"),
+    ]
+    for uname, pw, nama, role in demo:
+        if session.query(User).filter_by(username=uname).first() is None:
+            session.add(User(
+                username=uname,
+                password_hash=hash_password(pw),
+                nama=nama,
+                email=uname + "@prodi.ac.id",
+                role=role,
+            ))
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+
+    # Seed data master dropdown (Kategori PL & Jenis MK) — idempotent
+    from models.master_dropdown import KategoriPL, JenisMK
+    if session.query(KategoriPL).first() is None:
+        for nama in ["PL Penciri Utama", "PL Sikap", "PL Keterampilan Umum dan Sikap", "PL Tambahan KK dan P"]:
+            session.add(KategoriPL(nama=nama))
+    if session.query(JenisMK).first() is None:
+        for nama in ["MK Wajib", "MK Pilihan", "MKWK", "MKDU"]:
+            session.add(JenisMK(nama=nama))
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+
     # Data kurikulum (idempotent: lewati bila kurikulum sudah ada agar
     # ?init=1 yang diulang tidak menduplikasi data).
     from models.institution import ProgramStudi

@@ -47,7 +47,9 @@
     left: 0;
     z-index: 5;
     white-space: nowrap;
-    min-width: 120px;
+    max-width: 90px;
+    text-overflow: ellipsis;
+    overflow: hidden;
     color: var(--color-text);
     font-size: 0.6875rem;
 }
