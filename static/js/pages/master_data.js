@@ -77,7 +77,7 @@ var MasterDataPage = (function () {
 
         document.getElementById("btn-save-form").addEventListener("click", function () {
             var data = FormBuilder.getValues(form);
-            data.periode_id = 1;
+            data.periode_id = (AppState.currentPeriode && AppState.currentPeriode.id) || 1;
 
             if (isEdit) {
                 Api.put(endpoint + "/" + existing.id, data).then(function (res) {

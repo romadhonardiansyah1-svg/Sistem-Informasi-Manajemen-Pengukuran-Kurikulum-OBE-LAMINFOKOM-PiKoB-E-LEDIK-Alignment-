@@ -8,6 +8,7 @@ from flask import request
 import state
 from models.profil_lulusan import ProfilLulusan
 from utils.response import success, created, not_found, error
+from services.lock_guard import assert_periode_unlocked
 from utils.pagination import get_pagination_params, apply_pagination
 from middleware.validation import validate_request, validation_error_response
 
@@ -40,6 +41,11 @@ def create_pl():
     if not is_valid:
         return validation_error_response(errors)
 
+    try:
+        assert_periode_unlocked(data.get("periode_id"))
+    except ValueError as e:
+        return error(str(e), status=423)
+
     pl = ProfilLulusan(
         periode_id=data["periode_id"],
         kode=data["kode"],
@@ -58,6 +64,11 @@ def update_pl(record_id):
     if pl is None:
         return not_found()
 
+    try:
+        assert_periode_unlocked(pl.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
+
     data = request.get_json(silent=True)
     updatable = ("kode", "deskripsi", "kategori", "referensi")
     for field in updatable:
@@ -74,6 +85,11 @@ def delete_pl(record_id):
     pl = state.db.query(ProfilLulusan).get(record_id)
     if pl is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(pl.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
 
     state.db.delete(pl)
     state.db.commit()

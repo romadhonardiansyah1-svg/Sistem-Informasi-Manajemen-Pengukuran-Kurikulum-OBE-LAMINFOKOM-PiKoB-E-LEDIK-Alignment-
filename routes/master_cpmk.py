@@ -8,7 +8,9 @@ from flask import request
 import state
 from models.cpmk import CPMK
 from models.sub_cpmk import SubCPMK
-from utils.response import success, created, not_found
+from utils.response import success, created, not_found, error
+from services.lock_guard import assert_periode_unlocked
+from models.cpl import CPLProdi
 from utils.pagination import get_pagination_params, apply_pagination
 from middleware.validation import validate_request, validation_error_response
 
@@ -25,6 +27,14 @@ SUB_CPMK_SCHEMA = {
     "cpmk_id": {"required": True, "type": "int"},
     "mk_id": {"required": True, "type": "int"},
 }
+
+
+def _periode_id_of_cpl(cpl_id):
+    """Resolve periode_id dari CPL induk."""
+    if not cpl_id:
+        return None
+    cpl = state.db.query(CPLProdi).get(cpl_id)
+    return cpl.periode_id if cpl else None
 
 
 def list_cpmk():
@@ -53,6 +63,12 @@ def create_cpmk():
         kode=data["kode"],
         deskripsi=data["deskripsi"],
     )
+
+    try:
+        assert_periode_unlocked(_periode_id_of_cpl(data["cpl_id"]))
+    except ValueError as e:
+        return error(str(e), status=423)
+
     state.db.add(cpmk)
     state.db.commit()
     return created(data=cpmk.to_dict())
@@ -63,6 +79,11 @@ def update_cpmk(record_id):
     cpmk = state.db.query(CPMK).get(record_id)
     if cpmk is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(_periode_id_of_cpl(cpmk.cpl_id))
+    except ValueError as e:
+        return error(str(e), status=423)
 
     data = request.get_json(silent=True)
     for field in ("kode", "deskripsi"):
@@ -79,6 +100,11 @@ def delete_cpmk(record_id):
     cpmk = state.db.query(CPMK).get(record_id)
     if cpmk is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(_periode_id_of_cpl(cpmk.cpl_id))
+    except ValueError as e:
+        return error(str(e), status=423)
 
     state.db.delete(cpmk)
     state.db.commit()

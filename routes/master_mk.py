@@ -7,7 +7,8 @@ from flask import request
 
 import state
 from models.mata_kuliah import MataKuliah
-from utils.response import success, created, not_found
+from utils.response import success, created, not_found, error
+from services.lock_guard import assert_periode_unlocked
 from utils.pagination import get_pagination_params, apply_pagination
 from middleware.validation import validate_request, validation_error_response
 
@@ -45,6 +46,11 @@ def create_mk():
     if not is_valid:
         return validation_error_response(errors)
 
+    try:
+        assert_periode_unlocked(data.get("periode_id"))
+    except ValueError as e:
+        return error(str(e), status=423)
+
     mk = MataKuliah(
         periode_id=data["periode_id"],
         kode=data["kode"],
@@ -67,6 +73,11 @@ def update_mk(record_id):
     if mk is None:
         return not_found()
 
+    try:
+        assert_periode_unlocked(mk.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
+
     data = request.get_json(silent=True)
     updatable = ("kode", "nama", "sks", "semester", "jenis",
                  "is_capstone", "prasyarat", "deskripsi_singkat")
@@ -84,6 +95,11 @@ def delete_mk(record_id):
     mk = state.db.query(MataKuliah).get(record_id)
     if mk is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(mk.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
 
     state.db.delete(mk)
     state.db.commit()
