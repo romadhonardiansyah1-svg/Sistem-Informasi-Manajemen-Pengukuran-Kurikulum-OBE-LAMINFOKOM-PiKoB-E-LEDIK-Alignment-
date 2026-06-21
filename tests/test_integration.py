@@ -126,10 +126,63 @@ def test_referensi_export_xlsx():
         _cleanup(app_module, path)
 
 
+def test_periode_lima_tahun():
+    # PERIODE KURIKULUM PER 5 TAHUN (mis. 2024-2028 = 5 tahun inklusif).
+    client, app_module, path = _make_client()
+    try:
+        periodes = client.get("/api/periode").get_json()["data"]
+        assert periodes, "daftar periode kosong"
+        aktif = [p for p in periodes if p.get("status") == "aktif"] or periodes
+        p = aktif[0]
+        durasi = int(p["tahun_selesai"]) - int(p["tahun_mulai"]) + 1
+        assert durasi == 5, "periode harus 5 tahun, dapat %d (%s-%s)" % (
+            durasi, p["tahun_mulai"], p["tahun_selesai"])
+        print("test_periode_lima_tahun: OK")
+    finally:
+        _cleanup(app_module, path)
+
+
+def test_rps_template_dan_lock():
+    # RPS menerima field sesuai template (bukan hanya MK/kode/dosen/deskripsi),
+    # bisa diedit lewat endpoint header baru, dan diblokir saat periode terkunci.
+    client, app_module, path = _make_client()
+    try:
+        payload = {
+            "mk_id": 1, "periode_id": 1,
+            "kode_dokumen": "RPS-T1", "dosen_pengampu": "Dosen A",
+            "dosen_koordinator": "Koor B", "tanggal_penyusunan": "01-09-2025",
+            "bobot_teori_sks": 2, "bobot_praktikum_sks": 1,
+            "mk_prasyarat": "Tidak ada", "deskripsi_singkat": "desk",
+            "pustaka_utama": "Buku X", "pustaka_pendukung": "Buku Y",
+        }
+        r = client.post("/api/rps", json=payload)
+        assert r.status_code == 201, "gagal membuat RPS"
+        rid = r.get_json()["data"]["id"]
+
+        got = client.get("/api/rps/%d" % rid).get_json()["data"]
+        assert got["bobot_teori_sks"] == 2 and got["pustaka_utama"] == "Buku X", \
+            "field template RPS tidak tersimpan"
+
+        up = client.put("/api/rps/%d" % rid, json={"kode_dokumen": "RPS-T1-rev", "bobot_praktikum_sks": 2})
+        assert up.status_code == 200, "endpoint edit header RPS gagal"
+        got2 = client.get("/api/rps/%d" % rid).get_json()["data"]
+        assert got2["kode_dokumen"] == "RPS-T1-rev" and got2["bobot_praktikum_sks"] == 2
+
+        client.post("/api/periode/1/lock")
+        blocked = client.put("/api/rps/%d" % rid, json={"kode_dokumen": "X"})
+        assert blocked.status_code == 423, "edit RPS harus diblokir saat periode terkunci"
+        client.post("/api/periode/1/unlock")
+        print("test_rps_template_dan_lock: OK")
+    finally:
+        _cleanup(app_module, path)
+
+
 if __name__ == "__main__":
     test_dashboard_no_password_leak()
     test_three_reference_persist()
     test_derived_view_defaults_to_active_periode()
     test_locked_periode_blocks_writes()
     test_referensi_export_xlsx()
+    test_periode_lima_tahun()
+    test_rps_template_dan_lock()
     print("\nSemua test integrasi PASSED.")

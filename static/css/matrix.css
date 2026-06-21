@@ -39,16 +39,21 @@
     background: hsl(220, 35%, 16%);
 }
 
+/* Header baris (mis. kode CPL): kotak ringkas & rata tengah supaya tidak
+   terlihat lebar seolah ada kolom deskripsi padahal tidak ada (fix matriks CPL-PL).
+   Deskripsi tetap muncul lewat tooltip saat di-hover. */
 .matrix-table tbody th {
     background: var(--color-surface-alt);
-    font-weight: var(--font-weight-medium);
-    text-align: left;
-    padding-left: var(--spacing-md);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
     position: sticky;
     left: 0;
     z-index: 5;
     white-space: nowrap;
-    max-width: 90px;
+    width: 64px;
+    min-width: 56px;
+    max-width: 72px;
     text-overflow: ellipsis;
     overflow: hidden;
     color: var(--color-text);

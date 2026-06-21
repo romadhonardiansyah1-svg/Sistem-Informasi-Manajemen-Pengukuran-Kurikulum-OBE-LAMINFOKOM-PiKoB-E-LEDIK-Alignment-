@@ -65,10 +65,45 @@ def create_rps():
         dosen_pengampu=data.get("dosen_pengampu"),
         dosen_koordinator=data.get("dosen_koordinator"),
         tanggal_penyusunan=data.get("tanggal_penyusunan"),
+        bobot_teori_sks=data.get("bobot_teori_sks", 0),
+        bobot_praktikum_sks=data.get("bobot_praktikum_sks", 0),
+        media_software=data.get("media_software"),
+        media_hardware=data.get("media_hardware"),
+        mk_prasyarat=data.get("mk_prasyarat"),
     )
     state.db.add(rps)
     state.db.commit()
     return created(data=rps.to_dict())
+
+
+# Field header RPS yang boleh diubah (sesuai template Sheet "Rancangan RPS").
+_RPS_HEADER_FIELDS = (
+    "kode_dokumen", "deskripsi_singkat", "pustaka_utama", "pustaka_pendukung",
+    "dosen_pengampu", "dosen_koordinator", "tanggal_penyusunan",
+    "bobot_teori_sks", "bobot_praktikum_sks", "media_software",
+    "media_hardware", "mk_prasyarat",
+)
+
+
+def update_rps(record_id):
+    """PUT /api/rps/<id> -- ubah data header RPS (identitas, pustaka, dosen, dll)."""
+    rps = state.db.query(RPS).get(record_id)
+    if rps is None:
+        return not_found()
+
+    try:
+        assert_periode_unlocked(rps.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
+
+    data = request.get_json(silent=True) or {}
+    for field in _RPS_HEADER_FIELDS:
+        value = data.get(field)
+        if value is not None:
+            setattr(rps, field, value)
+
+    state.db.commit()
+    return success(data=rps.to_dict(), message="RPS diperbarui")
 
 
 def update_rps_minggu(record_id):
@@ -110,5 +145,6 @@ ROUTE_DEFINITIONS = [
     ("GET", "/api/rps", list_rps, "view_kurikulum"),
     ("GET", "/api/rps/<int:record_id>", get_rps, "view_kurikulum"),
     ("POST", "/api/rps", create_rps, "manage_rps"),
+    ("PUT", "/api/rps/<int:record_id>", update_rps, "manage_rps"),
     ("PUT", "/api/rps/<int:record_id>/minggu", update_rps_minggu, "manage_rps"),
 ]

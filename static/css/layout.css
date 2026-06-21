@@ -232,7 +232,9 @@ body {
     gap: var(--spacing-lg);
 }
 
-/* Sidebar collapsed (toggle) */
+/* Sidebar collapsible (toggle) — tombol toggle dipindah ke header agar
+   selalu terlihat walau sidebar tertutup (fix: dulu tombol ikut hilang
+   karena berada di dalam sidebar yang width-nya jadi 0). */
 .app-layout.sidebar-collapsed .sidebar {
     width: 0;
     overflow: hidden;
@@ -240,6 +242,22 @@ body {
 
 .app-layout.sidebar-collapsed .main-content {
     margin-left: 0;
+}
+
+#sidebar-toggle {
+    margin-right: var(--spacing-md);
+    font-size: 1.15rem;
+    line-height: 1;
+    background: transparent;
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+#sidebar-toggle:hover {
+    background: var(--color-surface-alt);
 }
 
 /* Responsive */
