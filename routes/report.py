@@ -51,8 +51,24 @@ def report_cpl_agregat():
     return success(data=result)
 
 
+def list_mahasiswa():
+    """GET /api/mahasiswa -- daftar mahasiswa untuk pemilih laporan/nilai."""
+    from models.user import Mahasiswa
+
+    angkatan = request.args.get("angkatan", type=int)
+    query = state.db.query(Mahasiswa)
+    if angkatan:
+        query = query.filter_by(angkatan=angkatan)
+    items = query.order_by(Mahasiswa.nim).all()
+    return success(data=[
+        {"id": m.id, "nim": m.nim, "nama": m.nama, "angkatan": m.angkatan}
+        for m in items
+    ])
+
+
 ROUTE_DEFINITIONS = [
     ("GET", "/api/report/cpl/saya", report_cpl_saya, "view_report_self"),
     ("GET", "/api/report/cpl/mahasiswa", report_cpl_mahasiswa, "view_report"),
     ("GET", "/api/report/cpl/agregat", report_cpl_agregat, "view_report"),
+    ("GET", "/api/mahasiswa", list_mahasiswa, "view_kurikulum"),
 ]

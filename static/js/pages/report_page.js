@@ -10,7 +10,10 @@ var ReportPage = (function () {
             '<div class="page-header">' +
             '  <div><h2 class="page-title">Laporan Pemenuhan CPL</h2>' +
             '  <p class="page-desc">Visualisasi ketercapaian Capaian Pembelajaran Lulusan</p></div>' +
-            '  <button class="btn btn-primary" id="btn-export-pdf">Unduh PDF</button>' +
+            '  <div class="page-header-actions">' +
+            '    <select class="periode-select" id="report-mhs" style="min-width:220px"></select>' +
+            '    <button class="btn btn-primary" id="btn-export-pdf">Unduh PDF</button>' +
+            '  </div>' +
             '</div>' +
             '<div class="dash-row">' +
             '  <div class="dash-col-chart">' +
@@ -30,15 +33,44 @@ var ReportPage = (function () {
             '</div>' +
             '<div class="cpl-report-grid" id="cpl-cards"></div>';
 
-        _loadReport();
+        _loadMahasiswaThenReport();
 
         document.getElementById("btn-export-pdf").addEventListener("click", function () {
             window.print();
         });
     }
 
-    function _loadReport() {
-        Api.get("/api/report/cpl/mahasiswa?mahasiswa_id=1").then(function (res) {
+    function _loadMahasiswaThenReport() {
+        var sel = document.getElementById("report-mhs");
+        Api.get("/api/mahasiswa").then(function (res) {
+            var list = (res && res.data) || [];
+            if (list.length === 0) {
+                sel.style.display = "none";
+                _renderFallback();
+                return;
+            }
+            var opts = "";
+            for (var i = 0; i < list.length; i++) {
+                opts += '<option value="' + list[i].id + '">' +
+                        DomUtils.escape(list[i].nim + " - " + list[i].nama) + '</option>';
+            }
+            sel.innerHTML = opts;
+            sel.addEventListener("change", function () {
+                _loadReport(parseInt(this.value, 10));
+            });
+            _loadReport(parseInt(sel.value, 10));
+        }, function () {
+            sel.style.display = "none";
+            _renderFallback();
+        });
+    }
+
+    function _loadReport(mahasiswaId) {
+        // Bersihkan kartu sebelum render ulang agar tidak menumpuk saat ganti mahasiswa.
+        var cards = document.getElementById("cpl-cards");
+        if (cards) cards.innerHTML = "";
+
+        Api.get("/api/report/cpl/mahasiswa?mahasiswa_id=" + mahasiswaId).then(function (res) {
             if (res.data && res.data.spider_chart && res.data.spider_chart.length > 0) {
                 _renderWithData(res.data);
                 return;

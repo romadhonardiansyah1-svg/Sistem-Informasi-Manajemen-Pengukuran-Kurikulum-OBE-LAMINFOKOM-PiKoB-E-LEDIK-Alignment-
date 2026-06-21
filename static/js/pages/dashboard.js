@@ -48,17 +48,20 @@ var DashboardPage = (function () {
     }
 
     function _loadAllData() {
+        var pid = (AppState.currentPeriode && AppState.currentPeriode.id) || null;
+        var pq = pid ? ("&periode_id=" + pid) : "";
+        var pq1 = pid ? ("?periode_id=" + pid) : "";
         Promise.all([
-            Api.get("/api/pl"),
-            Api.get("/api/cpl-prodi"),
-            Api.get("/api/mk"),
-            Api.get("/api/cpmk?page_size=50"),
-            Api.get("/api/bk"),
+            Api.get("/api/pl" + pq1),
+            Api.get("/api/cpl-prodi" + pq1),
+            Api.get("/api/mk" + pq1),
+            Api.get("/api/cpmk?page_size=50" + pq),
+            Api.get("/api/bk" + pq1),
             Api.get("/api/matrix/cpl_pl"),
             Api.get("/api/matrix/cpl_bk"),
             Api.get("/api/matrix/bk_mk"),
             Api.get("/api/matrix/cpl_mk"),
-            Api.get("/api/organisasi-mk"),
+            Api.get("/api/organisasi-mk" + pq1),
         ]).then(function (res) {
             var pl = res[0].data || [];
             var cpl = res[1].data || [];
@@ -85,11 +88,12 @@ var DashboardPage = (function () {
         var user = AppState.user || {};
         var hour = new Date().getHours();
         var greeting = hour < 12 ? "Selamat Pagi" : hour < 17 ? "Selamat Siang" : "Selamat Malam";
+        var periodeNama = (AppState.currentPeriode && AppState.currentPeriode.nama) || "Kurikulum";
         el.innerHTML =
             '<div class="welcome-card">' +
             '  <div class="welcome-text">' +
             '    <h2>' + greeting + ', ' + DomUtils.escape(user.nama || "Admin") + '</h2>' +
-            '    <p>Sistem Informasi Manajemen Kurikulum OBE - Kurikulum 2024-2028</p>' +
+            '    <p>Sistem Informasi Manajemen Kurikulum OBE - ' + DomUtils.escape(periodeNama) + '</p>' +
             '  </div>' +
             '  <div class="welcome-badge">' +
             '    <span class="badge badge-success">' + DomUtils.escape(user.role || "kaprodi") + '</span>' +

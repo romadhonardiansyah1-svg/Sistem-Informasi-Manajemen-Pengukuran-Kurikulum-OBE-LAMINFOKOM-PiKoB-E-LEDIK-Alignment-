@@ -154,10 +154,12 @@ SESSION_LIFETIME_MINUTES = 120
 
 
 # -- Pagination --
+# Data master kurikulum berjumlah puluhan–ratusan baris dan dikonsumsi penuh
+# oleh tabel, matriks, dan dropdown (tanpa UI paging). Default dibuat besar agar
+# tidak ada data yang terpotong senyap (mis. MK 66 baris dulu terpotong di 25).
+DEFAULT_PAGE_SIZE = 1000
 
-DEFAULT_PAGE_SIZE = 25
-
-MAX_PAGE_SIZE = 100
+MAX_PAGE_SIZE = 5000
 
 
 # -- Upload --

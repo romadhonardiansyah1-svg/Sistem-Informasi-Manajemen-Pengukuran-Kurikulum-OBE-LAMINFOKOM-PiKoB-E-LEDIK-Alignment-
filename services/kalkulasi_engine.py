@@ -117,10 +117,24 @@ def hitung_seluruh_mahasiswa(mahasiswa_id):
     """
     Pipeline lengkap untuk satu mahasiswa.
     Return: seluruh skor CPL + grade.
+    CPL dibatasi pada periode AKTIF agar tidak mencampur antar-periode
+    (konsisten dengan laporan agregat).
     """
-    cpl_list = state.db.query(CPLProdi).all()
-    results = []
+    from models.period import PeriodeKurikulum
 
+    aktif = (
+        state.db.query(PeriodeKurikulum)
+        .filter_by(status="aktif")
+        .order_by(PeriodeKurikulum.tahun_mulai.desc())
+        .first()
+    )
+
+    query = state.db.query(CPLProdi)
+    if aktif is not None:
+        query = query.filter_by(periode_id=aktif.id)
+    cpl_list = query.order_by(CPLProdi.kode).all()
+
+    results = []
     for cpl in cpl_list:
         result = hitung_nilai_cpl(mahasiswa_id, cpl.id)
         result["cpl_kode"] = cpl.kode

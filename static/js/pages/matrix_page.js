@@ -24,9 +24,14 @@ var MatrixPage = (function () {
         var config = ROW_COL_CONFIG[type];
         if (!config) return;
 
+        // Batasi baris/kolom matriks ke periode aktif agar tidak mencampur
+        // entitas antar-periode.
+        var pid = (AppState.currentPeriode && AppState.currentPeriode.id) || null;
+        var pq = pid ? ("?periode_id=" + pid) : "";
+
         Promise.all([
-            Api.get(config.rowEndpoint),
-            Api.get(config.colEndpoint),
+            Api.get(config.rowEndpoint + pq),
+            Api.get(config.colEndpoint + pq),
             Api.get("/api/matrix/" + type),
         ]).then(function (results) {
             var rowItems = results[0].data || [];
@@ -38,9 +43,19 @@ var MatrixPage = (function () {
             var container = document.getElementById("matrix-render-area");
             MatrixGridComponent.render(container, rowItems, colItems, activeSet, {
                 onToggle: function (rowId, colId, isActive) {
-                    Api.post("/api/matrix/" + type + "/toggle", {
+                    // Kembalikan promise<boolean> agar grid bisa revert bila ditolak.
+                    return Api.post("/api/matrix/" + type + "/toggle", {
                         row_id: parseInt(rowId),
                         col_id: parseInt(colId),
+                    }).then(function (res) {
+                        var ok = res && res.status === "success";
+                        if (!ok && typeof ToastComponent !== "undefined") {
+                            ToastComponent.show(
+                                (res && res.message) || "Gagal menyimpan relasi",
+                                "error"
+                            );
+                        }
+                        return ok;
                     });
                 },
             });

@@ -108,13 +108,27 @@ var MatrixGridComponent = (function () {
 
     function _createToggleHandler(td, callbacks) {
         return function () {
+            if (td.dataset.busy === "1") return;
             var rowId = td.dataset.row;
             var colId = td.dataset.col;
 
             td.classList.toggle("active");
+            var nowActive = td.classList.contains("active");
 
             if (callbacks && callbacks.onToggle) {
-                callbacks.onToggle(rowId, colId, td.classList.contains("active"));
+                var ret = callbacks.onToggle(rowId, colId, nowActive);
+                // Bila handler mengembalikan promise, kembalikan (revert) sel
+                // jika server menolak (mis. periode terkunci) atau error jaringan.
+                if (ret && typeof ret.then === "function") {
+                    td.dataset.busy = "1";
+                    ret.then(function (ok) {
+                        if (!ok) td.classList.toggle("active");
+                        td.dataset.busy = "";
+                    }, function () {
+                        td.classList.toggle("active");
+                        td.dataset.busy = "";
+                    });
+                }
             }
         };
     }
