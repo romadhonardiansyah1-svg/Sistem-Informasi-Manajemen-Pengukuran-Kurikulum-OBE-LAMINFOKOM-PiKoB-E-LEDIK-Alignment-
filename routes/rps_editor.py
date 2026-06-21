@@ -7,8 +7,9 @@ from flask import request
 
 import state
 from models.rps import RPS, RPSMinggu
-from utils.response import success, created, not_found
+from utils.response import success, created, not_found, error
 from utils.pagination import get_pagination_params, apply_pagination
+from services.lock_guard import assert_periode_unlocked
 
 
 def list_rps():
@@ -48,6 +49,12 @@ def get_rps(record_id):
 def create_rps():
     """POST /api/rps"""
     data = request.get_json(silent=True)
+
+    try:
+        assert_periode_unlocked(data.get("periode_id"))
+    except ValueError as e:
+        return error(str(e), status=423)
+
     rps = RPS(
         mk_id=data["mk_id"],
         periode_id=data["periode_id"],
@@ -69,6 +76,11 @@ def update_rps_minggu(record_id):
     rps = state.db.query(RPS).get(record_id)
     if rps is None:
         return not_found()
+
+    try:
+        assert_periode_unlocked(rps.periode_id)
+    except ValueError as e:
+        return error(str(e), status=423)
 
     data = request.get_json(silent=True)
     minggu_data = data.get("minggu", [])

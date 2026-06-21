@@ -6,14 +6,18 @@ Menampilkan MK per semester dalam layout visual.
 import state
 from models.mata_kuliah import MataKuliah
 from utils.response import success
+from services.periode_helper import resolve_periode_id
 
 
 def get_organisasi_mk():
     """GET /api/organisasi-mk -- MK dikelompokkan per semester."""
     session = state.db
-    mks = session.query(MataKuliah).order_by(
-        MataKuliah.semester, MataKuliah.kode
-    ).all()
+    periode_id = resolve_periode_id()
+
+    query = session.query(MataKuliah)
+    if periode_id:
+        query = query.filter_by(periode_id=periode_id)
+    mks = query.order_by(MataKuliah.semester, MataKuliah.kode).all()
 
     semesters = {}
     for mk in mks:

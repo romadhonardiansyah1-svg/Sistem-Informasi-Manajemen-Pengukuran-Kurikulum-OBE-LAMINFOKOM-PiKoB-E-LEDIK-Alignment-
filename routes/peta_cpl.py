@@ -5,19 +5,28 @@ Bentuk: baris = CPL, kolom = Semester 1..8, isi sel = daftar MK + jumlah SKS.
 """
 
 import state
+from flask import request
 from models.cpl import CPLProdi
 from models.mata_kuliah import MataKuliah
 from models.mapping import mapping_cpl_mk
 from utils.response import success
+from services.periode_helper import resolve_periode_id
 from sqlalchemy import select
 
 
 def get_peta_cpl():
     """GET /api/peta-cpl -- CPL per semester (otomatis dari relasi)."""
     session = state.db
+    periode_id = resolve_periode_id()
 
-    cpls = session.query(CPLProdi).order_by(CPLProdi.kode).all()
-    mks = session.query(MataKuliah).order_by(MataKuliah.kode).all()
+    cpl_q = session.query(CPLProdi)
+    mk_q = session.query(MataKuliah)
+    if periode_id:
+        cpl_q = cpl_q.filter_by(periode_id=periode_id)
+        mk_q = mk_q.filter_by(periode_id=periode_id)
+
+    cpls = cpl_q.order_by(CPLProdi.kode).all()
+    mks = mk_q.order_by(MataKuliah.kode).all()
 
     mk_dict = {}
     for mk in mks:

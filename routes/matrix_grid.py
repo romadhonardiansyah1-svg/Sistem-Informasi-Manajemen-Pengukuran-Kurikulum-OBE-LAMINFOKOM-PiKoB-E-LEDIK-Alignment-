@@ -13,8 +13,19 @@ from models.mapping import (
 )
 from utils.response import success, error
 from services.sync_service import sync_cpl_mk_from_relations
+from services.lock_guard import (
+    assert_unlocked_by_cpl, assert_unlocked_by_bk, assert_unlocked_by_cpmk,
+)
 
 SYNC_TRIGGER_TYPES = {"cpl_bk", "bk_mk"}
+
+# Resolver kunci periode berdasarkan kolom baris tiap matriks (BUG-6).
+_ROW_LOCK_RESOLVERS = {
+    "cpl_id": assert_unlocked_by_cpl,
+    "cpl_prodi_id": assert_unlocked_by_cpl,
+    "bk_id": assert_unlocked_by_bk,
+    "cpmk_id": assert_unlocked_by_cpmk,
+}
 
 
 MATRIX_TYPES = {
@@ -75,6 +86,14 @@ def toggle_cell(matrix_type):
 
     row_id = body.get("row_id")
     col_id = body.get("col_id")
+
+    # BUG-6: hormati kunci periode pada perubahan matriks (resolve via baris).
+    resolver = _ROW_LOCK_RESOLVERS.get(row_key)
+    if resolver is not None:
+        try:
+            resolver(row_id)
+        except ValueError as e:
+            return error(str(e), status=423)
 
     existing = state.db.execute(
         table.select().where(

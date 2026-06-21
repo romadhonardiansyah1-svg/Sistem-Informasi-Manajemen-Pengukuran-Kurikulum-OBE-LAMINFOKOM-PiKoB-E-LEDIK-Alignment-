@@ -7,7 +7,18 @@ from flask import request
 
 import state
 from models.penilaian import TeknikPenilaian, TahapPenilaian, BobotPenilaian
-from utils.response import success, created, not_found
+from utils.response import success, created, not_found, error
+from services.lock_guard import assert_unlocked_by_mk
+
+
+def _guard_records_by_mk(records):
+    """BUG-6: tolak penyimpanan bila periode MK terkait sedang terkunci."""
+    seen = set()
+    for rec in records:
+        mk_id = rec.get("mk_id")
+        if mk_id and mk_id not in seen:
+            seen.add(mk_id)
+            assert_unlocked_by_mk(mk_id)
 
 
 def list_teknik_penilaian():
@@ -24,6 +35,10 @@ def save_teknik_penilaian():
     """POST /api/penilaian/teknik"""
     data = request.get_json(silent=True)
     records = data.get("records", [])
+    try:
+        _guard_records_by_mk(records)
+    except ValueError as e:
+        return error(str(e), status=423)
     for rec in records:
         tp = TeknikPenilaian(
             cpl_id=rec["cpl_id"],
@@ -55,6 +70,10 @@ def save_tahap_penilaian():
     """POST /api/penilaian/tahap"""
     data = request.get_json(silent=True)
     records = data.get("records", [])
+    try:
+        _guard_records_by_mk(records)
+    except ValueError as e:
+        return error(str(e), status=423)
     for rec in records:
         tp = TahapPenilaian(
             cpl_id=rec["cpl_id"],
@@ -85,6 +104,10 @@ def save_bobot_penilaian():
     """POST /api/penilaian/bobot"""
     data = request.get_json(silent=True)
     records = data.get("records", [])
+    try:
+        _guard_records_by_mk(records)
+    except ValueError as e:
+        return error(str(e), status=423)
     for rec in records:
         bp = BobotPenilaian(
             cpl_id=rec["cpl_id"],

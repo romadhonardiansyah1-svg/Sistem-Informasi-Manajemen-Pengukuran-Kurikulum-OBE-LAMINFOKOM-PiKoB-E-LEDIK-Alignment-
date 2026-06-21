@@ -32,6 +32,7 @@ var ReferensiPage = (function () {
         var html = '<div class="page-header">' +
             '<h2 class="page-title">Referensi Sumber Data</h2>' +
             '<p class="page-desc">Pemetaan setiap fitur ke sumber dokumen: Rancangan Kurikulum (Spreadsheet), Buku Kurikulum (Panduan APTIKOM), dan PIKOBE/LEDIK.</p>' +
+            '<button class="btn btn-sm btn-primary" id="btn-export-ref" style="margin-top:8px">⬇ Export Excel</button>' +
             '</div>';
 
         html += '<div class="card"><table class="data-table">';
@@ -55,6 +56,14 @@ var ReferensiPage = (function () {
 
         html += '</tbody></table></div>';
         content.innerHTML = html;
+
+        var exportBtn = document.getElementById("btn-export-ref");
+        if (exportBtn) {
+            exportBtn.addEventListener("click", function () {
+                // Unduh langsung dari endpoint server (xlsx via openpyxl).
+                window.location.href = "/api/referensi/export";
+            });
+        }
     }
 
     return { init: init };

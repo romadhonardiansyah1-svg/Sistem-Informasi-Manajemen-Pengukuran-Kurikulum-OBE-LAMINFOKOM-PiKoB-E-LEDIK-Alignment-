@@ -38,6 +38,7 @@ def register_routes(app):
     from routes import log_peninjauan
     from routes import users as users_routes
     from routes import master_dropdown
+    from routes import referensi_export
 
     modules = [
         auth_routes,
@@ -64,6 +65,7 @@ def register_routes(app):
         log_peninjauan,
         users_routes,
         master_dropdown,
+        referensi_export,
     ]
 
     for module in modules:

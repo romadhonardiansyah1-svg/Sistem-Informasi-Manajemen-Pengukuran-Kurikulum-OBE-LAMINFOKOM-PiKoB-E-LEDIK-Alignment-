@@ -4,21 +4,32 @@ Read-only gabungan view dari data BK-MK dan CPL-BK.
 """
 
 import state
+from flask import request
 from models.cpl import CPLProdi
 from models.bahan_kajian import BahanKajian
 from models.mata_kuliah import MataKuliah
 from models.mapping import mapping_cpl_bk, mapping_bk_mk
 from utils.response import success
+from services.periode_helper import resolve_periode_id
 from sqlalchemy import select
 
 
 def get_pemetaan_cpl_bk_mk():
     """GET /api/pemetaan-cpl-bk-mk -- gabungan view."""
     session = state.db
+    periode_id = resolve_periode_id()
 
-    cpls = session.query(CPLProdi).order_by(CPLProdi.kode).all()
-    bks = session.query(BahanKajian).order_by(BahanKajian.kode).all()
-    mks = session.query(MataKuliah).order_by(MataKuliah.kode).all()
+    cpl_q = session.query(CPLProdi)
+    bk_q = session.query(BahanKajian)
+    mk_q = session.query(MataKuliah)
+    if periode_id:
+        cpl_q = cpl_q.filter_by(periode_id=periode_id)
+        bk_q = bk_q.filter_by(periode_id=periode_id)
+        mk_q = mk_q.filter_by(periode_id=periode_id)
+
+    cpls = cpl_q.order_by(CPLProdi.kode).all()
+    bks = bk_q.order_by(BahanKajian.kode).all()
+    mks = mk_q.order_by(MataKuliah.kode).all()
 
     cpl_bk_rows = session.execute(select(mapping_cpl_bk)).fetchall()
     bk_mk_rows = session.execute(select(mapping_bk_mk)).fetchall()
