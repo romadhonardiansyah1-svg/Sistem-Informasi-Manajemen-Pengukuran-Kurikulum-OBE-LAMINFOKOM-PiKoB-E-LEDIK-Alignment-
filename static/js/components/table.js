@@ -18,6 +18,9 @@ var TableComponent = (function () {
         for (var c = 0; c < columns.length; c++) {
             var th = document.createElement("th");
             th.textContent = columns[c].label;
+            if (columns[c].className) {
+                th.className = columns[c].className;
+            }
             headerRow.appendChild(th);
         }
 
@@ -39,7 +42,15 @@ var TableComponent = (function () {
             for (var c2 = 0; c2 < columns.length; c2++) {
                 var td = document.createElement("td");
                 var key = columns[c2].key;
-                td.textContent = row[key] !== undefined ? row[key] : "";
+                var cellVal = row[key] !== undefined && row[key] !== null ? row[key] : "";
+                td.textContent = cellVal;
+                if (columns[c2].className) {
+                    td.className = columns[c2].className;
+                    // Sel ringkas (mis. kolom referensi) -> tampilkan teks penuh saat hover.
+                    if (cellVal) {
+                        td.title = cellVal;
+                    }
+                }
                 // Tooltip (hover): tampilkan data dari field lain saat hover pada kolom ini
                 if (columns[c2].tooltip && row[columns[c2].tooltip]) {
                     td.title = columns[c2].tooltip + ": " + row[columns[c2].tooltip];

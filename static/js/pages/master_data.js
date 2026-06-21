@@ -6,9 +6,9 @@ var MasterDataPage = (function () {
 
     // Tiga kolom referutan sumber yang melekat di tiap data master (MODUL 1).
     var REF_COLUMNS = [
-        { key: "ref_buku",        label: "Ref. Buku" },
-        { key: "ref_spreadsheet", label: "Ref. Sheet" },
-        { key: "ref_pikobe",      label: "Ref. PIKOBE" },
+        { key: "ref_buku",        label: "Ref. Buku",   className: "cell-ref" },
+        { key: "ref_spreadsheet", label: "Ref. Sheet",  className: "cell-ref" },
+        { key: "ref_pikobe",      label: "Ref. PIKOBE", className: "cell-ref" },
     ];
 
     // Tiga input referensi sumber untuk form (dipakai semua entitas).
@@ -27,11 +27,11 @@ var MasterDataPage = (function () {
     }
 
     var COLUMN_MAP = {
-        "pl":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }, { key: "kategori", label: "Kategori" }]),
-        "cpl":  _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }]),
+        "pl":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }, { key: "kategori", label: "Kategori" }]),
+        "cpl":  _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }]),
         "bk":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "kompetensi", label: "Kompetensi" }]),
         "mk":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "sks", label: "SKS" }, { key: "semester", label: "Semester" }, { key: "jenis", label: "Jenis" }]),
-        "cpmk": _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi" }]),
+        "cpmk": _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }]),
     };
 
     var FORM_FIELDS_MAP = {

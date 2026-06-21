@@ -56,7 +56,7 @@ var MatrixGridComponent = (function () {
 
                 var checkSpan = document.createElement("span");
                 checkSpan.className = "check-mark";
-                checkSpan.textContent = "V";
+                checkSpan.textContent = "\u2713";
                 td.appendChild(checkSpan);
 
                 td.addEventListener("click", _createToggleHandler(td, callbacks));

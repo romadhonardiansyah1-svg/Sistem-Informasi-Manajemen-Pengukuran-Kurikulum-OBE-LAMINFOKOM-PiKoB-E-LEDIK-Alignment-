@@ -30,9 +30,13 @@ var ReferensiPage = (function () {
         var content = document.getElementById("page-content");
 
         var html = '<div class="page-header">' +
+            '<div>' +
             '<h2 class="page-title">Referensi Sumber Data</h2>' +
             '<p class="page-desc">Pemetaan setiap fitur ke sumber dokumen: Rancangan Kurikulum (Spreadsheet), Buku Kurikulum (Panduan APTIKOM), dan PIKOBE/LEDIK.</p>' +
-            '<button class="btn btn-sm btn-primary" id="btn-export-ref" style="margin-top:8px">⬇ Export Excel</button>' +
+            '</div>' +
+            '<div class="page-header-actions">' +
+            '<button class="btn btn-sm btn-primary" id="btn-export-ref">\u2b07 Export Excel</button>' +
+            '</div>' +
             '</div>';
 
         html += '<div class="card"><table class="data-table">';

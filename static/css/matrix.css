@@ -87,13 +87,20 @@
 
 .matrix-cell .check-mark {
     display: none;
-    color: var(--color-accent);
+    width: 22px;
+    height: 22px;
+    margin: 0 auto;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+    color: #fff;
     font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm);
+    font-size: 0.75rem;
+    line-height: 22px;
+    text-align: center;
 }
 
 .matrix-cell.active .check-mark {
-    display: inline;
+    display: inline-block;
 }
 
 /* Legend */

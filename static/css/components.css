@@ -183,16 +183,20 @@
     border-collapse: separate;
     border-spacing: 0;
     font-size: var(--font-size-sm);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
-.data-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+/* Bila tabel berada di dalam .card, jangan gandakan bingkai/sudut. */
+.card .data-table {
+    border: none;
+    border-radius: 0;
 }
 
 .data-table th {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0.75rem var(--spacing-md);
     text-align: left;
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-xs);
@@ -200,23 +204,29 @@
     letter-spacing: 0.05em;
     color: var(--color-text-secondary);
     background: var(--color-surface-alt);
-    border-bottom: 2px solid var(--color-border-light);
+    border-bottom: 1px solid var(--color-border);
     white-space: nowrap;
 }
 
+.data-table th:first-child { padding-left: var(--spacing-lg); }
+.data-table th:last-child  { padding-right: var(--spacing-lg); }
+
 .data-table td {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0.6875rem var(--spacing-md);
     border-bottom: 1px solid var(--color-border-light);
     color: var(--color-text);
     vertical-align: middle;
 }
 
-.data-table tbody tr {
-    transition: background var(--transition-fast);
+.data-table td:first-child { padding-left: var(--spacing-lg); }
+.data-table td:last-child  { padding-right: var(--spacing-lg); }
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.data-table tbody tr:nth-child(even) {
-    background: hsla(220, 18%, 96%, 0.5);
+.data-table tbody tr {
+    transition: background var(--transition-fast);
 }
 
 .data-table tbody tr:hover {
@@ -227,12 +237,38 @@
     font-family: var(--font-mono);
     font-size: var(--font-size-xs);
     color: var(--color-accent);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
+}
+
+.data-table .cell-center { text-align: center; }
+
+.data-table .cell-detail {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+}
+
+/* Kolom referensi: ringkas + ellipsis agar baris tidak melebar/tinggi. */
+.data-table .cell-ref {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+/* Kolom deskripsi panjang: batasi lebar, satu baris + ellipsis (teks penuh saat hover). */
+.data-table .cell-desc {
+    max-width: 380px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-secondary);
 }
 
 .data-table.compact th,
 .data-table.compact td {
-    padding: 0.375rem var(--spacing-sm);
+    padding: 0.4375rem var(--spacing-sm);
 }
 
 /* -- Badge -- */
@@ -443,9 +479,30 @@
 /* -- Page Header -- */
 .page-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    column-gap: var(--spacing-lg);
+    row-gap: var(--spacing-xs);
     margin-bottom: var(--spacing-xl);
+}
+
+/* Judul mengisi sisa ruang; deskripsi (bila langsung di header) turun penuh
+   ke baris berikutnya, bukan berjajar di samping judul. */
+.page-header > .page-title { flex: 1 1 auto; }
+.page-header > .page-desc { flex: 1 1 100%; order: 5; margin-top: 2px; }
+
+.page-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+.btn-group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
 }
 
 .page-title {

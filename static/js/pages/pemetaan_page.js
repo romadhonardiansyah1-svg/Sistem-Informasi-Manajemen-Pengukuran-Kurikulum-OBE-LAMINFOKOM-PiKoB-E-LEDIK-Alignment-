@@ -13,9 +13,11 @@ var PemetaanPage = (function () {
         var content = document.getElementById("page-content");
         content.innerHTML =
             '<div class="page-header">' +
-            '  <h2 class="page-title">' + entry.title + '</h2>' +
-            '  <p class="page-desc">Pemetaan gabungan CPL - Bahan Kajian - Mata Kuliah (Tabel 8, hal 24)</p>' +
-            '  <div class="btn-group" style="margin-top:8px">' +
+            '  <div>' +
+            '    <h2 class="page-title">' + entry.title + '</h2>' +
+            '    <p class="page-desc">Pemetaan gabungan CPL - Bahan Kajian - Mata Kuliah (Tabel 8, hal 24)</p>' +
+            '  </div>' +
+            '  <div class="page-header-actions">' +
             '    <button class="btn btn-sm btn-primary" id="btn-view-diagram">Diagram (gaya buku)</button>' +
             '    <button class="btn btn-sm btn-outline" id="btn-view-tabel">Tabel</button>' +
             '  </div>' +
