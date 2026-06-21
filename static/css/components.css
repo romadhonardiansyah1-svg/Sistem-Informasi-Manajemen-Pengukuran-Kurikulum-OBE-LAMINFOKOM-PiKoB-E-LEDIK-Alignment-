@@ -628,3 +628,212 @@
         color: #000;
     }
 }
+
+/* ===== Organisasi MK: layout horizontal (semester sebagai kolom, Tabel 10) ===== */
+.organisasi-horizontal {
+    display: flex;
+    gap: var(--spacing-md);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-sm);
+    align-items: flex-start;
+}
+
+.org-sem-col {
+    flex: 0 0 200px;
+    min-width: 200px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.org-sem-head {
+    background: var(--color-sidebar);
+    color: #fff;
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-sm);
+}
+
+.org-sem-sks {
+    font-size: var(--font-size-xs);
+    background: hsla(0, 0%, 100%, 0.18);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+}
+
+.org-sem-body {
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.org-mk-card {
+    border: 1px solid var(--color-border-light);
+    border-left-width: 4px;
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface-alt);
+}
+
+.org-mk-kode {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+}
+
+.org-mk-nama {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.org-mk-sks {
+    font-size: 0.625rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+/* Warna jenis MK */
+.org-mk-card.mk-wajib   { border-left-color: hsl(211, 61%, 50%); }
+.org-mk-card.mk-pilihan { border-left-color: hsl(150, 50%, 45%); }
+.org-mk-card.mk-mkwk    { border-left-color: hsl(38, 80%, 52%); }
+.org-mk-card.mk-mkdu    { border-left-color: hsl(280, 40%, 55%); }
+
+.org-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: center;
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.org-legend .org-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.org-dot.mk-wajib   { background: hsl(211, 61%, 50%); }
+.org-dot.mk-pilihan { background: hsl(150, 50%, 45%); }
+.org-dot.mk-mkwk    { background: hsl(38, 80%, 52%); }
+.org-dot.mk-mkdu    { background: hsl(280, 40%, 55%); }
+
+.org-legend .org-total {
+    margin-left: auto;
+    color: var(--color-text);
+}
+
+/* ===== Pemetaan CPL-BK-MK: diagram gaya buku (Tabel 8) ===== */
+.pemetaan-diagram {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.pmt-node {
+    flex: 0 0 168px;
+    min-width: 168px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm);
+}
+
+.pmt-bk-row,
+.pmt-cpl-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    min-height: 22px;
+}
+
+.pmt-bk-chip {
+    background: hsla(38, 80%, 52%, 0.18);
+    border: 1px solid hsl(38, 80%, 52%);
+    color: hsl(32, 70%, 32%);
+    border-radius: var(--radius-sm);
+    padding: 1px 6px;
+    font-size: 0.625rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.pmt-cpl-code {
+    background: hsla(211, 61%, 50%, 0.14);
+    border: 1px solid hsl(211, 61%, 50%);
+    color: hsl(211, 61%, 36%);
+    border-radius: var(--radius-sm);
+    padding: 1px 6px;
+    font-size: 0.625rem;
+    font-weight: var(--font-weight-bold);
+}
+
+.pmt-connector {
+    width: 2px;
+    height: 14px;
+    background: var(--color-border);
+}
+
+.pmt-mk-box {
+    background: var(--color-sidebar);
+    color: #fff;
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.pmt-mk-kode {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+}
+
+.pmt-mk-nama {
+    font-size: 0.625rem;
+    opacity: 0.85;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmt-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.pmt-legend .pmt-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.pmt-dot.pmt-bk  { background: hsl(38, 80%, 52%); }
+.pmt-dot.pmt-mk  { background: hsl(220, 35%, 20%); }
+.pmt-dot.pmt-cpl { background: hsl(211, 61%, 50%); }

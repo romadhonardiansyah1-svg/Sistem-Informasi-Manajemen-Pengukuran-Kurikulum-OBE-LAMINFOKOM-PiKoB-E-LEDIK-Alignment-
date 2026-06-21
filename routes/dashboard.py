@@ -9,8 +9,17 @@ from utils.response import success
 def get_dashboard():
     """GET /api/dashboard"""
     user = state.current_user
+    # Jangan kirim objek User mentah (to_dict membawa password_hash). Pakai payload aman.
     data = {
-        "user": user.to_dict(),
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "nama": user.nama,
+            "email": user.email,
+            "role": user.role,
+            "prodi_id": user.prodi_id,
+            "fakultas_id": user.fakultas_id,
+        },
         "role": user.role,
     }
     return success(data=data)

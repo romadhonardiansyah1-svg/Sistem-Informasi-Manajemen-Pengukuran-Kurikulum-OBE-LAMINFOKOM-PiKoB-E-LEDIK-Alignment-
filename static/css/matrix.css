@@ -8,10 +8,11 @@
 }
 
 .matrix-table {
-    width: 100%;
-    min-width: 600px;
+    width: auto;
+    min-width: 0;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: auto;
 }
 
 .matrix-table th,
@@ -55,11 +56,20 @@
 }
 
 .matrix-cell {
-    width: 40px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
     height: 40px;
     cursor: pointer;
     transition: all var(--transition-fast);
     position: relative;
+}
+
+/* Header kolom: lebar tetap & ringkas, cegah kotak melebar (BUG-2). */
+.matrix-table thead th.matrix-header-cell {
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
 }
 
 .matrix-cell:hover {

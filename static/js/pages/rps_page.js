@@ -8,6 +8,7 @@ var RPSPage = (function () {
     var _mkList = [];
     var _rpsList = [];
     var _selectedRps = null;
+    var _subCpmkMap = {};
 
     function init() {
         var content = document.getElementById("page-content");
@@ -90,8 +91,27 @@ var RPSPage = (function () {
     function _loadDetail(rpsId) {
         Api.get("/api/rps/" + rpsId).then(function (res) {
             _selectedRps = res.data;
-            _renderDetail();
+            var mkId = _selectedRps.mk_id;
+            // Ambil Sub-CPMK MK ini untuk pemetaan kode pada tabel cetak mingguan.
+            Api.get("/api/sub-cpmk?mk_id=" + mkId).then(function (sres) {
+                _subCpmkMap = {};
+                var subs = sres.data || [];
+                for (var i = 0; i < subs.length; i++) {
+                    _subCpmkMap[subs[i].id] = subs[i].kode;
+                }
+                _renderDetail();
+            }, function () {
+                _subCpmkMap = {};
+                _renderDetail();
+            });
         });
+    }
+
+    function _getMkObj(mkId) {
+        for (var i = 0; i < _mkList.length; i++) {
+            if (_mkList[i].id === mkId) return _mkList[i];
+        }
+        return null;
     }
 
     function _renderDetail() {
@@ -148,9 +168,89 @@ var RPSPage = (function () {
         var printBtn = document.getElementById("btn-print-rps");
         if (printBtn) {
             printBtn.addEventListener("click", function () {
+                _buildPrintArea();
                 window.print();
             });
         }
+    }
+
+    function _buildPrintArea() {
+        var r = _selectedRps;
+        if (!r) return;
+        var mk = _getMkObj(r.mk_id) || {};
+        var esc = DomUtils.escape;
+
+        var area = document.getElementById("rps-print-area");
+        if (!area) {
+            area = document.createElement("div");
+            area.id = "rps-print-area";
+            document.getElementById("page-content").appendChild(area);
+        }
+
+        var sksTotal = mk.sks || ((r.bobot_teori_sks || 0) + (r.bobot_praktikum_sks || 0));
+        var html = '';
+        html += '<div class="rps-doc-title">Rencana Pembelajaran Semester (RPS)</div>';
+        html += '<div class="rps-doc-subtitle">Program Studi Sistem Informasi</div>';
+
+        // Identitas Mata Kuliah
+        html += '<table class="rps-identitas">';
+        html += '<tr><td class="lbl">Mata Kuliah</td><td>' + esc(mk.nama || "-") + '</td>' +
+                '<td class="lbl">Kode MK</td><td>' + esc(mk.kode || "-") + '</td></tr>';
+        html += '<tr><td class="lbl">Bobot SKS</td><td>' + sksTotal +
+                ' (T:' + (r.bobot_teori_sks || 0) + ' / P:' + (r.bobot_praktikum_sks || 0) + ')</td>' +
+                '<td class="lbl">Semester</td><td>' + esc(String(mk.semester || "-")) + '</td></tr>';
+        html += '<tr><td class="lbl">Kode Dokumen</td><td>' + esc(r.kode_dokumen || "-") + '</td>' +
+                '<td class="lbl">Tanggal Penyusunan</td><td>' + esc(r.tanggal_penyusunan || "-") + '</td></tr>';
+        html += '<tr><td class="lbl">Dosen Pengampu</td><td>' + esc(r.dosen_pengampu || "-") + '</td>' +
+                '<td class="lbl">Koordinator</td><td>' + esc(r.dosen_koordinator || "-") + '</td></tr>';
+        html += '<tr><td class="lbl">MK Prasyarat</td><td colspan="3">' + esc(r.mk_prasyarat || mk.prasyarat || "-") + '</td></tr>';
+        html += '</table>';
+
+        // Deskripsi singkat
+        html += '<div class="rps-section-title">Deskripsi Singkat Mata Kuliah</div>';
+        html += '<div>' + esc(r.deskripsi_singkat || mk.deskripsi_singkat || "-") + '</div>';
+
+        // Media pembelajaran
+        if (r.media_software || r.media_hardware) {
+            html += '<div class="rps-section-title">Media Pembelajaran</div>';
+            html += '<div>Perangkat lunak: ' + esc(r.media_software || "-") +
+                    ' &nbsp;|&nbsp; Perangkat keras: ' + esc(r.media_hardware || "-") + '</div>';
+        }
+
+        // Rencana mingguan
+        html += '<div class="rps-section-title">Rencana Pembelajaran Mingguan</div>';
+        var minggu = r.minggu || [];
+        html += '<table class="rps-weekly">';
+        html += '<thead><tr>' +
+                '<th>Mg</th><th>Sub-CPMK</th><th>Materi / Bahan Kajian</th>' +
+                '<th>Bentuk &amp; Metode Pembelajaran</th><th>Indikator</th><th>Bobot (%)</th>' +
+                '</tr></thead><tbody>';
+        for (var i = 0; i < minggu.length; i++) {
+            var m = minggu[i];
+            var label = m.minggu_ke === 8 ? " (UTS)" : m.minggu_ke === 16 ? " (UAS)" : "";
+            var subKode = m.sub_cpmk_id ? (_subCpmkMap[m.sub_cpmk_id] || ("Sub-" + m.sub_cpmk_id)) : "-";
+            var bentuk = m.bentuk_pembelajaran || "-";
+            if (m.metode_luring) bentuk += " (Luring: " + m.metode_luring + ")";
+            if (m.metode_daring) bentuk += " (Daring: " + m.metode_daring + ")";
+            html += '<tr>';
+            html += '<td class="c">' + m.minggu_ke + label + '</td>';
+            html += '<td>' + esc(subKode) + '</td>';
+            html += '<td>' + esc(m.materi || "-") + '</td>';
+            html += '<td>' + esc(bentuk) + '</td>';
+            html += '<td>' + esc(m.indikator || "-") + '</td>';
+            html += '<td class="c">' + (m.bobot_penilaian_persen || 0) + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+
+        // Pustaka
+        html += '<div class="rps-pustaka">';
+        html += '<div class="rps-section-title">Pustaka</div>';
+        html += '<div><strong>Utama:</strong> ' + esc(r.pustaka_utama || "-") + '</div>';
+        html += '<div><strong>Pendukung:</strong> ' + esc(r.pustaka_pendukung || "-") + '</div>';
+        html += '</div>';
+
+        area.innerHTML = html;
     }
 
     function _generateMinggu(rpsId) {
