@@ -103,7 +103,13 @@ def _register_page_routes(app):
             conn.close()
 
             if token and not authorized:
-                status["error"] = "Token tidak valid."
+                if not config.DB_ADMIN_TOKEN:
+                    status["error"] = ("DB_ADMIN_TOKEN belum di-set di environment server (Vercel). "
+                                       "Set env var DB_ADMIN_TOKEN lalu Redeploy, baru pakai token itu.")
+                    status["token_configured"] = False
+                else:
+                    status["error"] = "Token tidak valid (tidak cocok dengan DB_ADMIN_TOKEN di server)."
+                    status["token_configured"] = True
                 return status
 
             if not authorized:
