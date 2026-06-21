@@ -138,6 +138,24 @@ def reset_db():
     create_all()
 
 
+def clear_all_data():
+    """
+    Menghapus SEMUA baris dari setiap tabel (DML DELETE, TANPA DDL) dalam urutan
+    aman-FK (tabel anak dulu). Dipakai untuk RE-SEED PAKSA tanpa drop tabel,
+    sehingga aman di Supabase connection pooler (drop/create DDL bisa memutus SSL).
+    Setelah ini, seed_all() akan mengisi ulang dari nol karena ProgramStudi kosong.
+    """
+    _import_all_models()
+    if getattr(state, "engine", None) is None:
+        return
+    existing = set(inspect(state.engine).get_table_names())
+    with state.engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            if table.name in existing:
+                conn.execute(table.delete())
+    print("clear_all_data: semua baris dihapus (siap re-seed).")
+
+
 def _import_all_models():
     """
     Import semua module model agar SQLAlchemy

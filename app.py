@@ -133,8 +133,23 @@ def _register_page_routes(app):
 
             if request.args.get("init") == "1":
                 create_all()
+                force = request.args.get("force") == "1"
+                if force:
+                    # Re-seed PAKSA: hapus baris lama agar skip-guard seed_all
+                    # (yang melewati seeding bila ProgramStudi sudah ada) tidak
+                    # menahan pengisian ulang. Berguna saat seed sebelumnya gagal
+                    # sebagian (mis. MK kosong) sehingga ?init=1 biasa tidak menambal.
+                    from db.migrate import clear_all_data
+                    clear_all_data()
                 seed_all()
-                status["init_status"] = "Tabel dibuat ulang & data awal diisi (seeding)"
+                from models.mata_kuliah import MataKuliah
+                from models.cpl import CPLProdi
+                status["init_status"] = (
+                    ("FORCE: data lama dihapus lalu " if force else "")
+                    + "seeding dijalankan"
+                )
+                status["mk_count"] = state.db.query(MataKuliah).count()
+                status["cpl_count"] = state.db.query(CPLProdi).count()
                 status["tables"] = inspect(state.engine).get_table_names()
 
         except Exception as e:
