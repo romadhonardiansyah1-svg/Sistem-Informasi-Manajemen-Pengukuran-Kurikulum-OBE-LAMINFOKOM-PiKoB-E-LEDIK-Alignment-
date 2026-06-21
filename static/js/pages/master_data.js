@@ -62,7 +62,10 @@ var MasterDataPage = (function () {
     }
 
     function _loadData(entity, endpoint) {
-        Api.get(endpoint).then(function (res) {
+        // Filter sesuai periode aktif agar ganti periode benar-benar mengubah data.
+        var pid = (AppState.currentPeriode && AppState.currentPeriode.id) || null;
+        var url = endpoint + (pid ? ("?periode_id=" + pid) : "");
+        Api.get(url).then(function (res) {
             var columns = COLUMN_MAP[entity] || [];
             var rows = res.data || [];
 

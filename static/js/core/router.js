@@ -64,7 +64,20 @@ var Router = (function () {
             else if (actions.indexOf("view_report") !== -1) landing = "report";
             else if (actions.indexOf("view_dokumen") !== -1) landing = "agenda";
         }
+
+        // Muat ulang halaman aktif saat periode diganti / status kunci berubah,
+        // agar data yang tampil mengikuti periode terpilih (fix: dulu ganti
+        // periode tidak ada efek karena tidak ada yang mendengarkan event).
+        EventBus.on("periode:changed", _reloadActivePage);
+        EventBus.on("periode:lockchanged", _reloadActivePage);
+
         navigateTo(landing);
+    }
+
+    function _reloadActivePage() {
+        if (AppState.activePage) {
+            navigateTo(AppState.activePage);
+        }
     }
 
     return { navigateTo: navigateTo, init: init, registry: PAGE_REGISTRY };
