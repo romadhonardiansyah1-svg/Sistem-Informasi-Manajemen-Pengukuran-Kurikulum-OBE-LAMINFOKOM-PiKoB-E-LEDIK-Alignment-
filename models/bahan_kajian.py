@@ -17,4 +17,7 @@ class BahanKajian(BaseModel):
     nama = Column(String(200), nullable=False)
     deskripsi = Column(Text)
     kompetensi = Column(String(20))  # utama, pendukung
-    referensi = Column(Text)
+    referensi = Column(Text)  # legacy, dipertahankan; nilai dimigrasikan ke ref_buku
+    ref_buku = Column(Text)  # rujukan buku panduan (tabel/halaman)
+    ref_spreadsheet = Column(Text)  # rujukan sheet rancangan kurikulum
+    ref_pikobe = Column(Text)  # rujukan ledik/tabel PIKOBE

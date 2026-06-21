@@ -52,6 +52,9 @@ def create_pl():
         deskripsi=data["deskripsi"],
         kategori=data.get("kategori"),
         referensi=data.get("referensi"),
+        ref_buku=data.get("ref_buku"),
+        ref_spreadsheet=data.get("ref_spreadsheet"),
+        ref_pikobe=data.get("ref_pikobe"),
     )
     state.db.add(pl)
     state.db.commit()
@@ -70,7 +73,8 @@ def update_pl(record_id):
         return error(str(e), status=423)
 
     data = request.get_json(silent=True)
-    updatable = ("kode", "deskripsi", "kategori", "referensi")
+    updatable = ("kode", "deskripsi", "kategori", "referensi",
+                 "ref_buku", "ref_spreadsheet", "ref_pikobe")
     for field in updatable:
         value = data.get(field)
         if value is not None:

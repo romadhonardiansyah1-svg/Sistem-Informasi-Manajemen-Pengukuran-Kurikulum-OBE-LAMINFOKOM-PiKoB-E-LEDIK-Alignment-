@@ -27,6 +27,39 @@ _NEW_COLUMNS = [
     ("rps", "media_software", "TEXT"),
     ("rps", "media_hardware", "TEXT"),
     ("rps", "mk_prasyarat", "TEXT"),
+    # BUG-1: kolom yang ADA di model tapi belum terdaftar -> error di DB lama.
+    ("profil_lulusan", "referensi", "TEXT"),
+    ("profil_lulusan", "kategori", "VARCHAR(50)"),
+    ("mata_kuliah", "jenis", "VARCHAR(20) DEFAULT 'wajib'"),
+    ("mata_kuliah", "is_capstone", "BOOLEAN DEFAULT FALSE"),
+    ("mata_kuliah", "prasyarat", "TEXT"),
+    ("mata_kuliah", "deskripsi_singkat", "TEXT"),
+    # MODUL 1: kolom referensi 3 sumber yang melekat di tiap data master.
+    ("profil_lulusan", "ref_buku", "TEXT"),
+    ("profil_lulusan", "ref_spreadsheet", "TEXT"),
+    ("profil_lulusan", "ref_pikobe", "TEXT"),
+    ("cpl_prodi", "ref_buku", "TEXT"),
+    ("cpl_prodi", "ref_spreadsheet", "TEXT"),
+    ("cpl_prodi", "ref_pikobe", "TEXT"),
+    ("bahan_kajian", "ref_buku", "TEXT"),
+    ("bahan_kajian", "ref_spreadsheet", "TEXT"),
+    ("bahan_kajian", "ref_pikobe", "TEXT"),
+    ("mata_kuliah", "referensi", "TEXT"),
+    ("mata_kuliah", "ref_buku", "TEXT"),
+    ("mata_kuliah", "ref_spreadsheet", "TEXT"),
+    ("mata_kuliah", "ref_pikobe", "TEXT"),
+    ("cpmk", "referensi", "TEXT"),
+    ("cpmk", "ref_buku", "TEXT"),
+    ("cpmk", "ref_spreadsheet", "TEXT"),
+    ("cpmk", "ref_pikobe", "TEXT"),
+]
+
+# Migrasi nilai: salin kolom `referensi` lama -> `ref_buku` bila ref_buku kosong.
+# (table, kolom_lama, kolom_baru) -- idempotent, hanya mengisi yang NULL.
+_BACKFILL_COLUMNS = [
+    ("profil_lulusan", "referensi", "ref_buku"),
+    ("cpl_prodi", "referensi", "ref_buku"),
+    ("bahan_kajian", "referensi", "ref_buku"),
 ]
 
 
@@ -35,6 +68,7 @@ def create_all():
     _import_all_models()
     Base.metadata.create_all(bind=state.engine)
     ensure_columns()
+    backfill_columns()
 
 
 def ensure_columns():
@@ -62,6 +96,34 @@ def ensure_columns():
             print("ensure_columns: added {}.{}".format(table, column))
         except Exception as e:
             print("ensure_columns skip {}.{}: {}".format(table, column, e))
+
+
+def backfill_columns():
+    """
+    Menyalin nilai kolom lama `referensi` ke `ref_buku` bila `ref_buku` masih NULL.
+    Idempotent dan aman dijalankan berulang. Hanya berjalan jika kedua kolom ada.
+    """
+    if getattr(state, "engine", None) is None:
+        return
+
+    inspector = inspect(state.engine)
+    existing_tables = set(inspector.get_table_names())
+
+    for table, src, dst in _BACKFILL_COLUMNS:
+        if table not in existing_tables:
+            continue
+        cols = {c["name"] for c in inspector.get_columns(table)}
+        if src not in cols or dst not in cols:
+            continue
+        stmt = (
+            "UPDATE {t} SET {dst} = {src} "
+            "WHERE {dst} IS NULL AND {src} IS NOT NULL".format(t=table, src=src, dst=dst)
+        )
+        try:
+            with state.engine.begin() as conn:
+                conn.execute(text(stmt))
+        except Exception as e:
+            print("backfill_columns skip {}.{}->{}: {}".format(table, src, dst, e))
 
 
 def drop_all():

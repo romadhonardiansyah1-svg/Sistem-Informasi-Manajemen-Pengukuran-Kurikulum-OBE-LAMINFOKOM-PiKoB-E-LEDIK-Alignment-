@@ -17,3 +17,7 @@ class CPMK(BaseModel):
     cpl_id = Column(Integer, ForeignKey("cpl_prodi.id"), nullable=False)
     kode = Column(String(20), nullable=False)
     deskripsi = Column(Text, nullable=False)
+    referensi = Column(Text)  # legacy/umum; nilai dimigrasikan ke ref_buku
+    ref_buku = Column(Text)  # rujukan buku panduan (tabel/halaman)
+    ref_spreadsheet = Column(Text)  # rujukan sheet rancangan kurikulum
+    ref_pikobe = Column(Text)  # rujukan ledik/tabel PIKOBE

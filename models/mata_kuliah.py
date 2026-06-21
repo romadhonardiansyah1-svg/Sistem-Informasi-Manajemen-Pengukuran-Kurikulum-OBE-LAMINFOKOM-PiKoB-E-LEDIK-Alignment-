@@ -21,3 +21,7 @@ class MataKuliah(BaseModel):
     is_capstone = Column(Boolean, default=False)
     prasyarat = Column(Text)  # kode MK prasyarat, dipisah koma
     deskripsi_singkat = Column(Text)
+    referensi = Column(Text)  # legacy/umum; nilai dimigrasikan ke ref_buku
+    ref_buku = Column(Text)  # rujukan buku panduan (tabel/halaman)
+    ref_spreadsheet = Column(Text)  # rujukan sheet rancangan kurikulum
+    ref_pikobe = Column(Text)  # rujukan ledik/tabel PIKOBE

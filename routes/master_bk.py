@@ -53,6 +53,9 @@ def create_bk():
         deskripsi=data.get("deskripsi"),
         kompetensi=data.get("kompetensi"),
         referensi=data.get("referensi"),
+        ref_buku=data.get("ref_buku"),
+        ref_spreadsheet=data.get("ref_spreadsheet"),
+        ref_pikobe=data.get("ref_pikobe"),
     )
     state.db.add(bk)
     state.db.commit()
@@ -71,7 +74,8 @@ def update_bk(record_id):
         return error(str(e), status=423)
 
     data = request.get_json(silent=True)
-    for field in ("kode", "nama", "deskripsi", "kompetensi", "referensi"):
+    for field in ("kode", "nama", "deskripsi", "kompetensi", "referensi",
+                  "ref_buku", "ref_spreadsheet", "ref_pikobe"):
         value = data.get(field)
         if value is not None:
             setattr(bk, field, value)

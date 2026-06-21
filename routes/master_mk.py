@@ -61,6 +61,10 @@ def create_mk():
         is_capstone=data.get("is_capstone", False),
         prasyarat=data.get("prasyarat"),
         deskripsi_singkat=data.get("deskripsi_singkat"),
+        referensi=data.get("referensi"),
+        ref_buku=data.get("ref_buku"),
+        ref_spreadsheet=data.get("ref_spreadsheet"),
+        ref_pikobe=data.get("ref_pikobe"),
     )
     state.db.add(mk)
     state.db.commit()
@@ -80,7 +84,8 @@ def update_mk(record_id):
 
     data = request.get_json(silent=True)
     updatable = ("kode", "nama", "sks", "semester", "jenis",
-                 "is_capstone", "prasyarat", "deskripsi_singkat")
+                 "is_capstone", "prasyarat", "deskripsi_singkat",
+                 "referensi", "ref_buku", "ref_spreadsheet", "ref_pikobe")
     for field in updatable:
         value = data.get(field)
         if value is not None:

@@ -62,6 +62,10 @@ def create_cpmk():
         cpl_id=data["cpl_id"],
         kode=data["kode"],
         deskripsi=data["deskripsi"],
+        referensi=data.get("referensi"),
+        ref_buku=data.get("ref_buku"),
+        ref_spreadsheet=data.get("ref_spreadsheet"),
+        ref_pikobe=data.get("ref_pikobe"),
     )
 
     try:
@@ -86,7 +90,8 @@ def update_cpmk(record_id):
         return error(str(e), status=423)
 
     data = request.get_json(silent=True)
-    for field in ("kode", "deskripsi"):
+    for field in ("kode", "deskripsi",
+                  "referensi", "ref_buku", "ref_spreadsheet", "ref_pikobe"):
         value = data.get(field)
         if value is not None:
             setattr(cpmk, field, value)
