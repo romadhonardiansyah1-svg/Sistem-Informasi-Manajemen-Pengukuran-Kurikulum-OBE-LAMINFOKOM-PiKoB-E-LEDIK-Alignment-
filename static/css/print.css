@@ -1,36 +1,41 @@
 /*
  * Gaya cetak RPS sesuai template Buku Panduan APTIKOM (Bab 4, hal 42-45).
- * Saat mencetak, sembunyikan seluruh chrome aplikasi dan tampilkan hanya
- * dokumen RPS (#rps-print-area). Di layar, area cetak disembunyikan.
+ * Cetak RPS diaktifkan dengan menambahkan class `printing-rps` ke <body>
+ * (lihat rps_page.js). Tanpa class itu, cetak biasa (mis. Laporan CPL)
+ * tetap menampilkan konten halaman seperti biasa — bukan kosong.
  */
 
-/* Di layar: area cetak tidak terlihat. */
+/* Di layar: area cetak RPS tidak terlihat. */
 #rps-print-area {
     display: none;
 }
 
 @media print {
-    /* Sembunyikan chrome aplikasi. */
+    /* Selalu sembunyikan chrome aplikasi saat mencetak apa pun. */
     .sidebar,
     .app-header,
     .toast-container,
     .modal-backdrop,
-    .page-header,
-    .page-content > *:not(#rps-print-area) {
+    #sidebar-toggle {
         display: none !important;
     }
 
-    html, body, .app-layout, .main-content, .page-content {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
+    .main-content {
+        margin-left: 0 !important;
     }
 
-    #rps-print-area {
+    .page-content {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* ===== Mode cetak RPS: tampilkan HANYA dokumen RPS ===== */
+    body.printing-rps .page-header,
+    body.printing-rps .page-content > *:not(#rps-print-area) {
+        display: none !important;
+    }
+
+    body.printing-rps #rps-print-area {
         display: block !important;
         color: #000;
         font-family: "Times New Roman", Times, serif;

@@ -167,7 +167,20 @@ var RPSPage = (function () {
         if (saveBtn) saveBtn.addEventListener("click", function () { _saveMinggu(r.id); });
 
         var printBtn = document.getElementById("btn-print-rps");
-        if (printBtn) printBtn.addEventListener("click", function () { _buildPrintArea(); window.print(); });
+        if (printBtn) printBtn.addEventListener("click", _printRps);
+    }
+
+    // Cetak RPS: bangun dokumen, aktifkan mode cetak RPS, lalu print.
+    function _printRps() {
+        _buildPrintArea();
+        document.body.classList.add("printing-rps");
+        var cleanup = function () {
+            document.body.classList.remove("printing-rps");
+            window.removeEventListener("afterprint", cleanup);
+        };
+        window.addEventListener("afterprint", cleanup);
+        window.print();
+        setTimeout(cleanup, 1500);
     }
 
     // Tabel mingguan yang bisa diedit langsung (sesuai kolom template RPS).

@@ -4,42 +4,24 @@
  */
 var MasterDataPage = (function () {
 
-    // Tiga kolom referutan sumber yang melekat di tiap data master (MODUL 1).
-    var REF_COLUMNS = [
-        { key: "ref_buku",        label: "Ref. Buku",   className: "cell-ref" },
-        { key: "ref_spreadsheet", label: "Ref. Sheet",  className: "cell-ref" },
-        { key: "ref_pikobe",      label: "Ref. PIKOBE", className: "cell-ref" },
-    ];
-
-    // Tiga input referensi sumber untuk form (dipakai semua entitas).
-    var REF_FIELDS = [
-        { key: "ref_buku",        label: "Referensi Buku Panduan (mis. Tabel 1, hal 15)", type: "text" },
-        { key: "ref_spreadsheet", label: "Referensi Spreadsheet Rancangan (sheet)", type: "text" },
-        { key: "ref_pikobe",      label: "Referensi PIKOBE (ledik/tabel no.)", type: "text" },
-    ];
-
-    function _withRefColumns(cols) {
-        return cols.concat(REF_COLUMNS);
-    }
-
-    function _withRefFields(fields) {
-        return fields.concat(REF_FIELDS);
-    }
+    // Catatan: kolom referensi 3 sumber (ref_buku/ref_spreadsheet/ref_pikobe)
+    // sengaja TIDAK ditampilkan di tabel/form data master sesuai permintaan.
+    // Peta sumber data tetap tersedia di halaman "Sumber Data" (sidebar bawah).
 
     var COLUMN_MAP = {
-        "pl":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }, { key: "kategori", label: "Kategori" }]),
-        "cpl":  _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }]),
-        "bk":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "kompetensi", label: "Kompetensi" }]),
-        "mk":   _withRefColumns([{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "sks", label: "SKS" }, { key: "semester", label: "Semester" }, { key: "jenis", label: "Jenis" }]),
-        "cpmk": _withRefColumns([{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }]),
+        "pl":   [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }, { key: "kategori", label: "Kategori" }],
+        "cpl":  [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }],
+        "bk":   [{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "kompetensi", label: "Kompetensi" }],
+        "mk":   [{ key: "kode", label: "Kode" }, { key: "nama", label: "Nama" }, { key: "sks", label: "SKS" }, { key: "semester", label: "Semester" }, { key: "jenis", label: "Jenis" }],
+        "cpmk": [{ key: "kode", label: "Kode" }, { key: "deskripsi", label: "Deskripsi", className: "cell-desc" }],
     };
 
     var FORM_FIELDS_MAP = {
-        "pl":   _withRefFields([{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }, { key: "kategori", label: "Kategori", type: "remote-select", endpoint: "/api/kategori-pl", valueKey: "nama" }]),
-        "cpl":  _withRefFields([{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }]),
-        "bk":   _withRefFields([{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "kompetensi", label: "Kompetensi", type: "text" }]),
-        "mk":   _withRefFields([{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "sks", label: "SKS", type: "number" }, { key: "semester", label: "Semester", type: "number" }, { key: "jenis", label: "Jenis", type: "remote-select", endpoint: "/api/jenis-mk", valueKey: "nama" }]),
-        "cpmk": _withRefFields([{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }]),
+        "pl":   [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }, { key: "kategori", label: "Kategori", type: "remote-select", endpoint: "/api/kategori-pl", valueKey: "nama" }],
+        "cpl":  [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }],
+        "bk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "kompetensi", label: "Kompetensi", type: "text" }],
+        "mk":   [{ key: "kode", label: "Kode", type: "text" }, { key: "nama", label: "Nama", type: "text" }, { key: "sks", label: "SKS", type: "number" }, { key: "semester", label: "Semester", type: "number" }, { key: "jenis", label: "Jenis", type: "remote-select", endpoint: "/api/jenis-mk", valueKey: "nama" }],
+        "cpmk": [{ key: "kode", label: "Kode", type: "text" }, { key: "deskripsi", label: "Deskripsi", type: "textarea" }],
     };
 
     function init(entry) {
