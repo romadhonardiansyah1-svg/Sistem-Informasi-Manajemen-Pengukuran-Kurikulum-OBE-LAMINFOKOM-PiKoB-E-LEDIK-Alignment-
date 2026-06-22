@@ -1,52 +1,41 @@
 -- =====================================================================
 -- RESET DATA DEMO (penilaian, nilai, RPS) — AMAN
 -- =====================================================================
--- Tujuan: mengosongkan HANYA tabel data demo agar bisa diisi ulang dengan
--- data dummy terbaru yang lengkap & profesional. Data kurikulum inti
--- (Profil Lulusan, CPL, Bahan Kajian, Mata Kuliah, CPMK, matriks/pemetaan,
--- periode, user, mahasiswa) TIDAK disentuh.
+-- CARA TERMUDAH (DISARANKAN) — TANPA SQL Editor:
+--   Cukup buka URL ini di browser (sekali):
+--       https://<domain-anda>/api/db-status?token=<DB_ADMIN_TOKEN>&reseed_demo=1
+--   Endpoint itu otomatis mengosongkan 6 tabel demo lalu mengisinya ulang
+--   dengan data lengkap (RPS 16 minggu, penilaian, ratusan nilai bervariasi).
+--   Lalu refresh aplikasi (Ctrl+F5).
 --
--- Tabel yang dikosongkan:
+--   Catatan: error "Gagal menjalankan 'removeChild' pada 'Node'" yang muncul
+--   saat memakai SQL Editor Supabase adalah GANGGUAN UI dashboard Supabase
+--   (akibat fitur terjemahan otomatis browser), BUKAN error SQL. Memakai
+--   endpoint di atas menghindari masalah itu sepenuhnya.
+--
+-- ---------------------------------------------------------------------
+-- ALTERNATIF (via Supabase SQL Editor):
+--   Jika tetap ingin lewat SQL Editor, MATIKAN dulu terjemahan halaman
+--   (klik kanan -> "Jangan terjemahkan halaman ini"), lalu jalankan skrip
+--   di bawah. Setelah sukses, panggil ?reseed_demo=1 / ?init=1 untuk mengisi
+--   ulang, ATAU biarkan aplikasi mengisi otomatis saat dibuka.
+--
+-- Tabel yang dikosongkan (data kurikulum inti TIDAK disentuh):
 --   rps_minggu, rps, sub_cpmk, nilai_mahasiswa, tahap_penilaian, bobot_penilaian
---
--- CARA PAKAI (Supabase):
---   1. Buka Supabase -> SQL Editor.
---   2. Jalankan seluruh skrip ini (klik Run). Aman & dalam satu transaksi.
---   3. Setelah sukses, buka URL aplikasi di Vercel:
---          https://<domain-anda>/api/db-status?token=<DB_ADMIN_TOKEN>&init=1
---      (DB_ADMIN_TOKEN = nilai environment variable di Vercel).
---      Endpoint itu akan MENGISI ULANG tabel demo dengan data lengkap:
---      ~147 baris Tahap+Bobot penilaian, ratusan nilai bervariasi,
---      10 RPS x 16 minggu.
---   4. Refresh aplikasi (Ctrl+F5). Laporan & cetak penilaian kini berisi data.
---
--- Catatan: skrip ini idempotent secara praktis — boleh dijalankan berkali-kali.
--- Urutan TRUNCATE sudah memperhatikan foreign key (rps_minggu menunjuk ke rps
--- dan sub_cpmk; semuanya ada dalam satu perintah, jadi tidak perlu CASCADE).
 -- =====================================================================
 
 BEGIN;
 
-TRUNCATE TABLE
-    rps_minggu,
-    rps,
-    sub_cpmk,
-    nilai_mahasiswa,
-    tahap_penilaian,
-    bobot_penilaian
-RESTART IDENTITY;
+-- Urutan aman terhadap foreign key (anak dulu). DELETE dipakai (bukan TRUNCATE)
+-- agar lebih kompatibel dan tidak butuh CASCADE.
+DELETE FROM rps_minggu;
+DELETE FROM rps;
+DELETE FROM sub_cpmk;
+DELETE FROM nilai_mahasiswa;
+DELETE FROM tahap_penilaian;
+DELETE FROM bobot_penilaian;
 
 COMMIT;
-
--- Jika muncul error dependency foreign key (mis. ada tabel lain yang menunjuk
--- ke salah satu tabel di atas), ganti perintah TRUNCATE di atas dengan versi
--- CASCADE berikut (hapus tanda komentar):
---
--- BEGIN;
--- TRUNCATE TABLE rps_minggu, rps, sub_cpmk, nilai_mahasiswa,
---                tahap_penilaian, bobot_penilaian
--- RESTART IDENTITY CASCADE;
--- COMMIT;
 
 -- Verifikasi (opsional) — semua harus 0 setelah reset:
 -- SELECT

@@ -158,6 +158,37 @@ def _register_page_routes(app):
                 status["cpl_count"] = state.db.query(CPLProdi).count()
                 status["tables"] = inspect(state.engine).get_table_names()
 
+            if request.args.get("reseed_demo") == "1":
+                # Reset HANYA tabel demo (penilaian, nilai, RPS) lalu isi ulang.
+                # Data kurikulum inti tidak disentuh. Pengganti aman untuk
+                # menjalankan supabase_reset_demo.sql lewat SQL Editor.
+                from sqlalchemy import text as _text
+                _demo_tables = [
+                    "rps_minggu", "rps", "sub_cpmk",
+                    "nilai_mahasiswa", "tahap_penilaian", "bobot_penilaian",
+                ]
+                cleared = []
+                for _tbl in _demo_tables:
+                    try:
+                        state.db.execute(_text("DELETE FROM " + _tbl))
+                        cleared.append(_tbl)
+                    except Exception as _e:
+                        status.setdefault("reseed_demo_warnings", []).append(
+                            "{}: {}".format(_tbl, _e)
+                        )
+                state.db.commit()
+                # seed_all() idempotent: karena tabel demo kosong, akan diisi ulang.
+                seed_all()
+                from models.rps import RPS, RPSMinggu
+                from models.nilai import NilaiMahasiswa
+                from models.penilaian import TahapPenilaian
+                status["reseed_demo"] = "Tabel demo direset & diisi ulang"
+                status["reseed_demo_cleared"] = cleared
+                status["rps_count"] = state.db.query(RPS).count()
+                status["rps_minggu_count"] = state.db.query(RPSMinggu).count()
+                status["nilai_count"] = state.db.query(NilaiMahasiswa).count()
+                status["tahap_count"] = state.db.query(TahapPenilaian).count()
+
         except Exception as e:
             status["error"] = str(e)
             try:
