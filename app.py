@@ -246,8 +246,31 @@ def seed_all():
     # Data kurikulum (idempotent: lewati bila kurikulum sudah ada agar
     # ?init=1 yang diulang tidak menduplikasi data).
     from models.institution import ProgramStudi
-    if session.query(ProgramStudi).first() is not None:
-        print("Data kurikulum sudah ada -> seeding kurikulum dilewati.")
+    from models.period import PeriodeKurikulum
+    prodi = session.query(ProgramStudi).first()
+    if prodi is not None:
+        # Kurikulum master sudah ada -> jangan duplikasi. Namun tetap PASTIKAN
+        # data demo (RPS, penilaian, nilai) terisi. Seluruh seeder ini idempotent
+        # (lewati bila tabelnya masih berisi), sehingga setelah tabel demo
+        # dikosongkan via SQL lalu memanggil ?init=1, data demo akan dibuat ulang.
+        periode = (
+            session.query(PeriodeKurikulum)
+            .filter_by(prodi_id=prodi.id, status="aktif")
+            .first()
+            or session.query(PeriodeKurikulum).filter_by(prodi_id=prodi.id).first()
+            or session.query(PeriodeKurikulum).first()
+        )
+        try:
+            if periode is not None:
+                seed_rps(periode.id)
+            seed_mahasiswa(prodi.id)
+            seed_tahap_penilaian()
+            seed_nilai_demo()
+            session.commit()
+            print("Data kurikulum sudah ada -> data demo (RPS/penilaian/nilai) dipastikan terisi.")
+        except Exception as e:
+            session.rollback()
+            print(f"Seeding data demo dilewati/gagal: {e}")
         return
 
     try:
