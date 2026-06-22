@@ -11,6 +11,25 @@ from utils.response import success, created, not_found, error
 from services.lock_guard import assert_unlocked_by_mk
 
 
+def _enrich(dicts):
+    """Tambahkan kode CPL/MK/CPMK yang mudah dibaca ke baris penilaian."""
+    from models.cpl import CPLProdi
+    from models.mata_kuliah import MataKuliah
+    from models.cpmk import CPMK
+
+    cpl = {c.id: c.kode for c in state.db.query(CPLProdi).all()}
+    mk = {m.id: m.kode for m in state.db.query(MataKuliah).all()}
+    cpmk = {c.id: c.kode for c in state.db.query(CPMK).all()}
+    for d in dicts:
+        if "cpl_id" in d:
+            d["cpl_kode"] = cpl.get(d["cpl_id"], "-")
+        if "mk_id" in d:
+            d["mk_kode"] = mk.get(d["mk_id"], "-")
+        if "cpmk_id" in d:
+            d["cpmk_kode"] = cpmk.get(d["cpmk_id"], "-")
+    return dicts
+
+
 def _guard_records_by_mk(records):
     """BUG-6: tolak penyimpanan bila periode MK terkait sedang terkunci."""
     seen = set()
@@ -28,7 +47,7 @@ def list_teknik_penilaian():
     if mk_id:
         query = query.filter_by(mk_id=mk_id)
     items = query.all()
-    return success(data=[i.to_dict() for i in items])
+    return success(data=_enrich([i.to_dict() for i in items]))
 
 
 def save_teknik_penilaian():
@@ -63,7 +82,7 @@ def list_tahap_penilaian():
     if mk_id:
         query = query.filter_by(mk_id=mk_id)
     items = query.all()
-    return success(data=[i.to_dict() for i in items])
+    return success(data=_enrich([i.to_dict() for i in items]))
 
 
 def save_tahap_penilaian():
@@ -97,7 +116,7 @@ def list_bobot_penilaian():
     if mk_id:
         query = query.filter_by(mk_id=mk_id)
     items = query.all()
-    return success(data=[i.to_dict() for i in items])
+    return success(data=_enrich([i.to_dict() for i in items]))
 
 
 def save_bobot_penilaian():

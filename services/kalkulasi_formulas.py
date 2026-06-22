@@ -51,15 +51,24 @@ def normalize_cpl_score(raw_score, max_possible):
 
 def resolve_grade(score):
     """
-    Menentukan grade berdasarkan skor.
-    Menggunakan lookup di config.RUBRIK_GRADE_RANGES.
+    Menentukan grade berdasarkan skor (0-100).
+    Memakai batas BAWAH tiap rentang di config.RUBRIK_GRADE_RANGES agar skor
+    pecahan di "celah" (mis. 80.5) tetap terklasifikasi — bukan jatuh ke
+    "Tidak Terklasifikasi".
 
-    Contoh: resolve_grade(80) -> "Kompeten"
+    Contoh: resolve_grade(80.5) -> "Kompeten"
     """
-    for (low, high), label in config.RUBRIK_GRADE_RANGES.items():
-        if low <= score <= high:
+    s = float(score)
+    ranges = sorted(
+        config.RUBRIK_GRADE_RANGES.items(),
+        key=lambda kv: kv[0][0],
+        reverse=True,
+    )
+    for (low, _high), label in ranges:
+        if s >= low:
             return label
-    return "Tidak Terklasifikasi"
+    # Skor terendah (di bawah semua batas) -> ambil label rentang paling bawah.
+    return ranges[-1][1] if ranges else "Tidak Terklasifikasi"
 
 
 def calculate_weighted_total(scores, bobot):

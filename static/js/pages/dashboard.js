@@ -192,17 +192,30 @@ var DashboardPage = (function () {
 
     function _renderSpider(cpls) {
         var canvas = document.getElementById("cpl-spider");
-        if (!canvas || cpls.length === 0) return;
-        if (typeof SpiderChart !== "undefined") {
-            var dataPoints = [];
-            for (var i = 0; i < cpls.length; i++) {
-                dataPoints.push({
-                    label: cpls[i].kode,
-                    value: 70 + Math.round(Math.random() * 30),
-                });
+        if (!canvas) return;
+        var ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Tidak menggambar angka acak. Ambil capaian agregat nyata bila ada nilai.
+        Api.get("/api/report/cpl/mahasiswa?mahasiswa_id=1").then(function (res) {
+            var pts = (res.data && res.data.spider_chart) || [];
+            var hasNilai = pts.length > 0 && pts.some(function (p) { return p.value > 0; });
+            if (hasNilai && typeof SpiderChart !== "undefined") {
+                SpiderChart.draw("cpl-spider", pts, 100);
+            } else {
+                _spiderPlaceholder(ctx, canvas);
             }
-            SpiderChart.draw("cpl-spider", dataPoints, 100);
-        }
+        }, function () {
+            _spiderPlaceholder(ctx, canvas);
+        });
+    }
+
+    function _spiderPlaceholder(ctx, canvas) {
+        ctx.save();
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "14px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Belum ada nilai mahasiswa", canvas.width / 2, canvas.height / 2);
+        ctx.restore();
     }
 
     return { init: init };

@@ -9,15 +9,22 @@ from models.cpl import CPLProdi
 from models.cpmk import CPMK
 from models.mapping import mapping_cpl_mk, mapping_cpmk_mk
 from utils.response import success
+from services.periode_helper import resolve_periode_id
 from sqlalchemy import select
 
 
 def get_rumusan_mk():
     """GET /api/rumusan-mk -- Tabel 19. Rumusan Akhir MK."""
     session = state.db
+    periode_id = resolve_periode_id()
 
-    mks = session.query(MataKuliah).order_by(MataKuliah.kode).all()
-    cpls = session.query(CPLProdi).all()
+    mk_q = session.query(MataKuliah)
+    cpl_q = session.query(CPLProdi)
+    if periode_id:
+        mk_q = mk_q.filter_by(periode_id=periode_id)
+        cpl_q = cpl_q.filter_by(periode_id=periode_id)
+    mks = mk_q.order_by(MataKuliah.kode).all()
+    cpls = cpl_q.all()
     cpmks = session.query(CPMK).all()
 
     cpl_dict = {}
@@ -74,9 +81,15 @@ def get_rumusan_mk():
 def get_rumusan_cpl():
     """GET /api/rumusan-cpl -- Tabel 20. Rumusan Akhir CPL."""
     session = state.db
+    periode_id = resolve_periode_id()
 
-    cpls = session.query(CPLProdi).order_by(CPLProdi.kode).all()
-    mks = session.query(MataKuliah).all()
+    cpl_q = session.query(CPLProdi)
+    mk_q = session.query(MataKuliah)
+    if periode_id:
+        cpl_q = cpl_q.filter_by(periode_id=periode_id)
+        mk_q = mk_q.filter_by(periode_id=periode_id)
+    cpls = cpl_q.order_by(CPLProdi.kode).all()
+    mks = mk_q.all()
     cpmks = session.query(CPMK).all()
 
     mk_dict = {}

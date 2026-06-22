@@ -1,12 +1,15 @@
 /**
  * Halaman Input Nilai Mahasiswa.
- * US-10: Menginput nilai mentah aktivitas kelas berdasarkan NIM.
- * Pilih MK terlebih dahulu, lalu input nilai per mahasiswa per CPMK.
+ * US-10: Menginput nilai mentah aktivitas kelas.
+ * Pilih MK -> pilih mahasiswa & CPMK (yang relevan dengan MK) -> input komponen.
+ * skor_total dihitung di server berdasarkan BobotPenilaian (Tabel 18).
  */
 var NilaiPage = (function () {
 
     var _mkList = [];
     var _cpmkList = [];
+    var _mhsList = [];
+    var _cpmkMkSet = {};   // "cpmkId_mkId" -> true
     var _nilaiList = [];
     var _selectedMkId = null;
 
@@ -29,16 +32,24 @@ var NilaiPage = (function () {
             '</div>' +
             '<div id="nilai-container"></div>';
 
-        _loadMk();
+        _loadRefData();
     }
 
-    function _loadMk() {
+    function _loadRefData() {
         Promise.all([
             Api.get("/api/mk"),
             Api.get("/api/cpmk"),
+            Api.get("/api/mahasiswa"),
+            Api.get("/api/matrix/cpmk_mk"),
         ]).then(function (res) {
             _mkList = res[0].data || [];
             _cpmkList = res[1].data || [];
+            _mhsList = res[2].data || [];
+            var pairs = res[3].data || [];
+            _cpmkMkSet = {};
+            for (var p = 0; p < pairs.length; p++) {
+                _cpmkMkSet[pairs[p].cpmk_id + "_" + pairs[p].mk_id] = true;
+            }
 
             var select = document.getElementById("nilai-mk-select");
             for (var i = 0; i < _mkList.length; i++) {
@@ -73,12 +84,30 @@ var NilaiPage = (function () {
         return "MK #" + mkId;
     }
 
+    function _mhsLabel(id) {
+        for (var i = 0; i < _mhsList.length; i++) {
+            if (_mhsList[i].id === id) return _mhsList[i].nim + " - " + _mhsList[i].nama;
+        }
+        return "Mhs #" + id;
+    }
+
+    function _cpmkKode(id) {
+        for (var i = 0; i < _cpmkList.length; i++) {
+            if (_cpmkList[i].id === id) return _cpmkList[i].kode;
+        }
+        return "CPMK #" + id;
+    }
+
+    // CPMK yang relevan dengan MK terpilih (dari pemetaan CPMK-MK).
     function _getCpmkForMk(mkId) {
         var result = [];
         for (var i = 0; i < _cpmkList.length; i++) {
-            result.push(_cpmkList[i]);
+            if (_cpmkMkSet[_cpmkList[i].id + "_" + mkId]) {
+                result.push(_cpmkList[i]);
+            }
         }
-        return result;
+        // Fallback: bila pemetaan belum ada, tampilkan semua CPMK.
+        return result.length > 0 ? result : _cpmkList;
     }
 
     function _renderNilaiSection(mkId) {
@@ -100,15 +129,15 @@ var NilaiPage = (function () {
         } else {
             html += '<table class="data-table">';
             html += '<thead><tr>';
-            html += '<th>Mahasiswa ID</th><th>CPMK ID</th>';
+            html += '<th>Mahasiswa</th><th>CPMK</th>';
             html += '<th>Partisipasi</th><th>Observasi</th><th>Unjuk Kerja</th>';
-            html += '<th>UTS</th><th>UAS</th><th>Tes Lisan</th><th>Total</th>';
+            html += '<th>UTS</th><th>UAS</th><th>Tes Lisan</th><th>Nilai Akhir</th>';
             html += '</tr></thead><tbody>';
             for (var i = 0; i < _nilaiList.length; i++) {
                 var n = _nilaiList[i];
                 html += '<tr>';
-                html += '<td>' + n.mahasiswa_id + '</td>';
-                html += '<td>' + n.cpmk_id + '</td>';
+                html += '<td>' + DomUtils.escape(_mhsLabel(n.mahasiswa_id)) + '</td>';
+                html += '<td class="cell-code">' + DomUtils.escape(_cpmkKode(n.cpmk_id)) + '</td>';
                 html += '<td>' + (n.skor_partisipasi || 0) + '</td>';
                 html += '<td>' + (n.skor_observasi || 0) + '</td>';
                 html += '<td>' + (n.skor_unjuk_kerja || 0) + '</td>';
@@ -130,6 +159,12 @@ var NilaiPage = (function () {
     }
 
     function _showInputForm(mkId) {
+        var mhsOptions = '';
+        for (var m = 0; m < _mhsList.length; m++) {
+            mhsOptions += '<option value="' + _mhsList[m].id + '">' +
+                DomUtils.escape(_mhsList[m].nim + " - " + _mhsList[m].nama) + '</option>';
+        }
+
         var cpmkOptions = '';
         var cpmks = _getCpmkForMk(mkId);
         for (var i = 0; i < cpmks.length; i++) {
@@ -140,38 +175,21 @@ var NilaiPage = (function () {
 
         var formHtml =
             '<div class="form-group">' +
-            '<label class="form-label">Mahasiswa ID (NIM)</label>' +
-            '<input class="form-input" id="inp-mhs-id" type="number" placeholder="1" />' +
+            '<label class="form-label">Mahasiswa</label>' +
+            '<select class="form-input" id="inp-mhs-id">' + (mhsOptions || '<option value="">- tidak ada mahasiswa -</option>') + '</select>' +
             '</div>' +
             '<div class="form-group">' +
             '<label class="form-label">CPMK</label>' +
             '<select class="form-input" id="inp-cpmk">' + cpmkOptions + '</select>' +
             '</div>' +
+            '<p class="page-desc" style="margin:0 0 8px">Nilai akhir dihitung otomatis dari komponen sesuai bobot penilaian.</p>' +
             '<div class="identitas-form">' +
-            '<div class="form-group">' +
-            '<label class="form-label">Partisipasi</label>' +
-            '<input class="form-input" id="inp-partisipasi" type="number" value="0" />' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">Observasi</label>' +
-            '<input class="form-input" id="inp-observasi" type="number" value="0" />' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">Unjuk Kerja</label>' +
-            '<input class="form-input" id="inp-unjuk" type="number" value="0" />' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">UTS</label>' +
-            '<input class="form-input" id="inp-uts" type="number" value="0" />' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">UAS</label>' +
-            '<input class="form-input" id="inp-uas" type="number" value="0" />' +
-            '</div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">Tes Lisan</label>' +
-            '<input class="form-input" id="inp-lisan" type="number" value="0" />' +
-            '</div>' +
+            '<div class="form-group"><label class="form-label">Partisipasi</label><input class="form-input" id="inp-partisipasi" type="number" min="0" max="100" value="0" /></div>' +
+            '<div class="form-group"><label class="form-label">Observasi</label><input class="form-input" id="inp-observasi" type="number" min="0" max="100" value="0" /></div>' +
+            '<div class="form-group"><label class="form-label">Unjuk Kerja</label><input class="form-input" id="inp-unjuk" type="number" min="0" max="100" value="0" /></div>' +
+            '<div class="form-group"><label class="form-label">UTS</label><input class="form-input" id="inp-uts" type="number" min="0" max="100" value="0" /></div>' +
+            '<div class="form-group"><label class="form-label">UAS</label><input class="form-input" id="inp-uas" type="number" min="0" max="100" value="0" /></div>' +
+            '<div class="form-group"><label class="form-label">Tes Lisan</label><input class="form-input" id="inp-lisan" type="number" min="0" max="100" value="0" /></div>' +
             '</div>';
 
         var footerHtml = '<button class="btn btn-primary" id="btn-save-nilai">Simpan Nilai</button>';
@@ -182,26 +200,26 @@ var NilaiPage = (function () {
     }
 
     function _saveNilai(mkId) {
-        var p = parseFloat(document.getElementById("inp-partisipasi").value) || 0;
-        var o = parseFloat(document.getElementById("inp-observasi").value) || 0;
-        var u = parseFloat(document.getElementById("inp-unjuk").value) || 0;
-        var uts = parseFloat(document.getElementById("inp-uts").value) || 0;
-        var uas = parseFloat(document.getElementById("inp-uas").value) || 0;
-        var l = parseFloat(document.getElementById("inp-lisan").value) || 0;
-        var total = p + o + u + uts + uas + l;
+        var mhsVal = document.getElementById("inp-mhs-id").value;
+        var cpmkVal = document.getElementById("inp-cpmk").value;
+        if (!mhsVal || !cpmkVal) {
+            ToastComponent.show("Pilih mahasiswa dan CPMK terlebih dahulu", "error");
+            return;
+        }
 
+        // skor_total tidak dikirim: server menghitungnya dari komponen x bobot.
         var payload = {
             records: [{
-                mahasiswa_id: parseInt(document.getElementById("inp-mhs-id").value, 10),
+                mahasiswa_id: parseInt(mhsVal, 10),
                 mk_id: mkId,
-                cpmk_id: parseInt(document.getElementById("inp-cpmk").value, 10),
-                skor_partisipasi: p,
-                skor_observasi: o,
-                skor_unjuk_kerja: u,
-                skor_uts: uts,
-                skor_uas: uas,
-                skor_tes_lisan: l,
-                skor_total: total,
+                cpmk_id: parseInt(cpmkVal, 10),
+                semester_aktif: "2024/2025-Ganjil",
+                skor_partisipasi: parseFloat(document.getElementById("inp-partisipasi").value) || 0,
+                skor_observasi: parseFloat(document.getElementById("inp-observasi").value) || 0,
+                skor_unjuk_kerja: parseFloat(document.getElementById("inp-unjuk").value) || 0,
+                skor_uts: parseFloat(document.getElementById("inp-uts").value) || 0,
+                skor_uas: parseFloat(document.getElementById("inp-uas").value) || 0,
+                skor_tes_lisan: parseFloat(document.getElementById("inp-lisan").value) || 0,
             }],
         };
         Api.post("/api/nilai", payload).then(function (res) {
@@ -209,6 +227,8 @@ var NilaiPage = (function () {
                 ModalComponent.close();
                 ToastComponent.show("Nilai berhasil disimpan", "success");
                 _loadNilai(mkId);
+            } else {
+                ToastComponent.show((res && res.message) || "Gagal menyimpan nilai", "error");
             }
         });
     }

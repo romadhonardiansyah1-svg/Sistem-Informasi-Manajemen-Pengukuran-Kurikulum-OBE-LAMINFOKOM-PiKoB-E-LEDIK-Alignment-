@@ -131,3 +131,58 @@
         padding: 0;
     }
 }
+
+/* ===== Cetak umum (halaman selain RPS): tata letak rapi, tidak terpotong ===== */
+@media print {
+    /* Susun ulang grid dashboard/laporan menjadi satu kolom agar muat di A4. */
+    .dash-row {
+        display: block !important;
+    }
+    .dash-col-chart,
+    .dash-col-info {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    /* Batasi ukuran kanvas spider chart agar tidak melebihi halaman. */
+    .spider-chart-canvas {
+        max-width: 440px !important;
+        height: auto !important;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Container yang scroll horizontal harus tampil penuh saat dicetak,
+       kalau tidak isinya terpotong di tepi kanan halaman. */
+    .matrix-scroll,
+    .organisasi-horizontal,
+    .pemetaan-diagram,
+    .matrix-container,
+    #table-container,
+    .table-wrap {
+        overflow: visible !important;
+    }
+
+    /* Hindari kartu/baris terbelah antar halaman. */
+    .card,
+    .cpl-report-card,
+    .org-sem-col,
+    .pmt-node {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Elemen kontrol tidak perlu ikut tercetak. */
+    .tab-bar,
+    .tab-nav,
+    .page-header-actions,
+    .periode-select,
+    #report-mhs {
+        display: none !important;
+    }
+
+    .data-table {
+        font-size: 9pt;
+    }
+}

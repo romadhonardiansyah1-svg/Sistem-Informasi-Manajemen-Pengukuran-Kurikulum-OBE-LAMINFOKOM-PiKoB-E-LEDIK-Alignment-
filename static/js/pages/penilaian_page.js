@@ -13,9 +13,9 @@ var PenilaianPage = (function () {
 
     var COLUMNS = {
         teknik: [
-            { key: "cpl_id", label: "CPL" },
-            { key: "mk_id", label: "MK" },
-            { key: "cpmk_id", label: "CPMK" },
+            { key: "cpl_kode", label: "CPL" },
+            { key: "mk_kode", label: "MK" },
+            { key: "cpmk_kode", label: "CPMK" },
             { key: "partisipasi", label: "Partisipasi" },
             { key: "observasi", label: "Observasi" },
             { key: "unjuk_kerja", label: "Unjuk Kerja" },
@@ -24,9 +24,9 @@ var PenilaianPage = (function () {
             { key: "tes_lisan", label: "Tes Lisan" },
         ],
         tahap: [
-            { key: "cpl_id", label: "CPL" },
-            { key: "mk_id", label: "MK" },
-            { key: "cpmk_id", label: "CPMK" },
+            { key: "cpl_kode", label: "CPL" },
+            { key: "mk_kode", label: "MK" },
+            { key: "cpmk_kode", label: "CPMK" },
             { key: "tahap", label: "Tahap" },
             { key: "teknik_penilaian_text", label: "Teknik" },
             { key: "instrumen", label: "Instrumen" },
@@ -34,8 +34,8 @@ var PenilaianPage = (function () {
             { key: "bobot", label: "Bobot" },
         ],
         bobot: [
-            { key: "mk_id", label: "MK" },
-            { key: "cpmk_id", label: "CPMK" },
+            { key: "mk_kode", label: "MK" },
+            { key: "cpmk_kode", label: "CPMK" },
             { key: "partisipasi_pct", label: "Partisipasi (%)" },
             { key: "observasi_pct", label: "Observasi (%)" },
             { key: "unjuk_kerja_pct", label: "Unjuk Kerja (%)" },

@@ -102,46 +102,44 @@ var ReportPage = (function () {
     function _renderFallback() {
         Api.get("/api/cpl-prodi").then(function (res) {
             var cpls = res.data || [];
+            var summary = document.getElementById("cpl-summary");
             if (cpls.length === 0) {
-                document.getElementById("cpl-summary").innerHTML =
-                    '<div class="empty-state"><p>Belum ada data CPL Prodi.</p></div>';
+                summary.innerHTML =
+                    '<div class="empty-state"><p>Belum ada data CPL Prodi pada periode ini.</p></div>';
                 return;
             }
 
-            var dataPoints = [];
-            for (var i = 0; i < cpls.length; i++) {
-                dataPoints.push({
-                    label: cpls[i].kode,
-                    value: 70 + Math.round(Math.random() * 30),
-                });
-            }
-            SpiderChart.draw("report-spider", dataPoints, 100);
-
-            var summary = document.getElementById("cpl-summary");
-            var html = '<table class="data-table compact">';
-            html += '<thead><tr><th>CPL</th><th>Deskripsi</th></tr></thead><tbody>';
+            // Jangan membuat angka palsu. Tampilkan daftar CPL + status kosong.
+            var html = '<div class="empty-state" style="padding:16px 8px">' +
+                '<div class="empty-state-title">Nilai mahasiswa belum tersedia</div>' +
+                '<p>Ketercapaian CPL akan muncul otomatis setelah dosen menginput nilai mahasiswa. ' +
+                'Angka tidak ditampilkan agar laporan tidak menyesatkan.</p></div>';
+            html += '<table class="data-table compact" style="margin-top:12px">';
+            html += '<thead><tr><th>CPL</th><th>Deskripsi</th><th>Status</th></tr></thead><tbody>';
             for (var j = 0; j < cpls.length; j++) {
                 html += '<tr>';
                 html += '<td class="cell-code">' + DomUtils.escape(cpls[j].kode) + '</td>';
                 html += '<td>' + DomUtils.escape(cpls[j].deskripsi) + '</td>';
+                html += '<td><span class="badge badge-warning">Belum dinilai</span></td>';
                 html += '</tr>';
             }
             html += '</tbody></table>';
-            html += '<p class="dash-more">Data nilai mahasiswa belum tersedia. Spider chart menampilkan data simulasi.</p>';
             summary.innerHTML = html;
 
+            // Kosongkan area chart & kartu (tidak menggambar data simulasi).
             var cards = document.getElementById("cpl-cards");
-            var cardsHtml = '';
-            for (var k = 0; k < dataPoints.length; k++) {
-                var dp = dataPoints[k];
-                cardsHtml += '<div class="card cpl-report-card">';
-                cardsHtml += '<div class="cpl-kode">' + dp.label + '</div>';
-                cardsHtml += '<div class="cpl-score">' + Math.round(dp.value) + '</div>';
-                cardsHtml += '<div class="cpl-grade">Simulasi</div>';
-                cardsHtml += '<div class="progress-bar"><div class="progress-fill fill-' + _getColor(dp.value) + '" style="width:' + dp.value + '%"></div></div>';
-                cardsHtml += '</div>';
+            if (cards) cards.innerHTML = "";
+            var canvas = document.getElementById("report-spider");
+            if (canvas) {
+                var ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.fillStyle = "#94a3b8";
+                ctx.font = "14px Inter, sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("Belum ada nilai", canvas.width / 2, canvas.height / 2);
+                ctx.restore();
             }
-            cards.innerHTML = cardsHtml;
         });
     }
 
